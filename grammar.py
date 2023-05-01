@@ -47,7 +47,37 @@ def FIRST(G, symbol, P, FIRST_SET):
         return True
     else:
         return False
-                        
+
+
+def FOLLOW(FIRST_SET, G, symbol, FOLLOW_SET):
+    for no_terminal in G.productions: # para cada no terminal en el conjunto de producciones (S, A, B, C..)
+        counter = 0
+        for production in G.productions[no_terminal]: # para cada produccion en la lista de producciones del no terminal (ABCDE, a, b, Ɛ)
+            count = production.count(symbol)
+            if count >= 1:
+                index = -1
+                for i in range(count):
+                    index = production.find(symbol, index+1)
+                    if index != -1:
+                        for next in production[index+1:]:
+                            if next in G.terminals:
+                                FOLLOW_SET[symbol].add(next)
+                                break
+                            if next in G.nonterminals:
+                                FOLLOW_SET[symbol] = FOLLOW_SET[symbol].union(FIRST_SET[next])
+                                if 'Ɛ' in FIRST_SET[next]:
+                                    counter += 1
+                                    FOLLOW_SET[symbol].remove('Ɛ')
+                                else:
+                                    break
+                        if counter == len(production[index+1:]):
+                            if not len(FOLLOW_SET[no_terminal]):
+                                FOLLOW(FIRST_SET, G, no_terminal, FOLLOW_SET)
+                                FOLLOW_SET[symbol] = FOLLOW_SET[symbol].union(FOLLOW_SET[no_terminal])
+                            else:
+                                FOLLOW_SET[symbol] = FOLLOW_SET[symbol].union(FOLLOW_SET[no_terminal])
+                    else:
+                        break
 
 
 def main():
@@ -60,6 +90,15 @@ def main():
     for i in FIRST_SET.keys():
         FIRST(G, i, productions[i], FIRST_SET)
     print(FIRST_SET)
+
+    FOLLOW_SET = {}
+    for i in nonterminals:
+        FOLLOW_SET[i] = set()
+        FOLLOW_SET[start].add('$')
+    for i in FOLLOW_SET.keys():
+        FOLLOW(FIRST_SET, G, i, FOLLOW_SET)
+    print(FOLLOW_SET)
+
 
 if __name__ == "__main__":
     main()
