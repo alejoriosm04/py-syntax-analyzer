@@ -50,33 +50,33 @@ def FIRST(G, symbol, P, FIRST_SET):
 
 
 def FOLLOW(FIRST_SET, G, symbol, FOLLOW_SET):
-    for no_terminal in G.productions: # para cada no terminal en el conjunto de producciones (S, A, B, C..)
-        counter = 0
-        for production in G.productions[no_terminal]: # para cada produccion en la lista de producciones del no terminal (ABCDE, a, b, Ɛ)
-            count = production.count(symbol)
-            if count >= 1:
-                index = -1
-                for i in range(count):
-                    index = production.find(symbol, index+1)
-                    if index != -1:
-                        for next in production[index+1:]:
-                            if next in G.terminals:
+    for no_terminal in G.productions: # para cada no terminal en el conjunto de producciones (S, A, B, C..).
+        counter = 0 #contador que permité identificar si todos los terminos derivan en epsilon hasta el final de la cadena, y por lo tanto, se debe calcular el follow de quien dicha cadena esta derivando.
+        for production in G.productions[no_terminal]: # para cada produccion en la lista de producciones del no terminal (ABCDE, a, b, Ɛ).
+            count = production.count(symbol) # contador que nos permite identificar cuantas veces esta ese no terminal en la cadena, para asi, calcularle el follow cada vez que aparezca.
+            if count >= 1: # si el no terminal se encuentra en la cadena: 
+                index = -1 # permite actualizar la posición en caso de que exista mas de una ocurrencia del no terminal en dicha cadena. (asi ignoramos el que ya se evaluo, y continuamos con la siguiente aparicion).
+                for i in range(count): # para cada una de las apariciones:
+                    index = production.find(symbol, index+1) # nos ubicamos en la aparicion, y actualizamos el valor del index para la siguiente ocurrencia en caso de existir.
+                    if index != -1: # condición para que el index no se resetee una vez se encuentren las ocurrencias del no terminal.
+                        for next in production[index+1:]: # para cada uno de los caracteres siguientes a ese no terminal en mi cadena:
+                            if next in G.terminals: # si el siguiente es un terminal, lo añade al follow del no terminal actual y deja de evaluar los que siguen .
                                 FOLLOW_SET[symbol].add(next)
                                 break
-                            if next in G.nonterminals:
-                                FOLLOW_SET[symbol] = FOLLOW_SET[symbol].union(FIRST_SET[next])
-                                if 'Ɛ' in FIRST_SET[next]:
+                            if next in G.nonterminals: # si el siguiente es un no terminal:
+                                FOLLOW_SET[symbol] = FOLLOW_SET[symbol].union(FIRST_SET[next]) # se añade a mi conjunto follow del no terminal actual, el first de mi no terminal siguiente.
+                                if 'Ɛ' in FIRST_SET[next]: # si epsilon esta en el first de mi no terminal siguiente, seguimos evaluando el resto de elementos de la cadena, sumamos uno al contador y eliminamos del follow de mi no terminal actual el epsilon que habiamos agregado.
                                     counter += 1
                                     FOLLOW_SET[symbol].remove('Ɛ')
-                                else:
+                                else: # paramos de evaluar esa cadena.
                                     break
-                        if counter == len(production[index+1:]):
-                            if not len(FOLLOW_SET[no_terminal]):
+                        if counter == len(production[index+1:]): # si el contador es igual a la cantidad de siguientes que habian a mi no terminal, significa que me encuentro en el final de la cadena, y debo utilizar la propiedad 3, uniendo el follow de mi no terminal actual con el de el no terminal de quien esta derivando la cadena.
+                            if not len(FOLLOW_SET[no_terminal]): # evita la recursion infinita, si estoy buscando el follow de ese elemento y no existe, hago el llamado y agrego al follow de mi actual, el follow del que estoy derivando (que se encuentra en el llamado recursivo).
                                 FOLLOW(FIRST_SET, G, no_terminal, FOLLOW_SET)
                                 FOLLOW_SET[symbol] = FOLLOW_SET[symbol].union(FOLLOW_SET[no_terminal])
-                            else:
+                            else: # si el follow del que estoy derivando ya tiene elementos, hago la union sin hacer el llamado recursivo.
                                 FOLLOW_SET[symbol] = FOLLOW_SET[symbol].union(FOLLOW_SET[no_terminal])
-                    else:
+                    else: #deje de buscar cuando no existan mas apariciones de el no terminal.
                         break
 
 
@@ -98,7 +98,6 @@ def main():
     for i in FOLLOW_SET.keys():
         FOLLOW(FIRST_SET, G, i, FOLLOW_SET)
     print(FOLLOW_SET)
-
 
 if __name__ == "__main__":
     main()
