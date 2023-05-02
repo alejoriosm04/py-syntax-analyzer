@@ -1,3 +1,6 @@
+from prettytable import PrettyTable
+
+
 class grammar():
     def __init__(self, nonterminals, terminals, productions, start):
         self.nonterminals = nonterminals
@@ -77,7 +80,47 @@ def FOLLOW(FIRST_SET, G, symbol, FOLLOW_SET):
                             else: # si el follow del que estoy derivando ya tiene elementos, hago la union sin hacer el llamado recursivo.
                                 FOLLOW_SET[symbol] = FOLLOW_SET[symbol].union(FOLLOW_SET[no_terminal])
                     else: #deje de buscar cuando no existan mas apariciones de el no terminal.
-                        break
+                        break        
+
+
+def predictive_table(G, FIRST_SET, FOLLOW_SET):
+    table = {}
+    for no_terminal in G.productions:
+        table[no_terminal] = {}
+        for production in G.productions[no_terminal]:
+            if production == 'Ɛ':
+                for terminal in FOLLOW_SET[no_terminal]:
+                    table[no_terminal][terminal] = production
+            else:
+                if production[0] in G.terminals:
+                    table[no_terminal][production[0]] = production
+                if production[0] in G.nonterminals:
+                    for terminal in FIRST_SET[production[0]]:
+                        table[no_terminal][terminal] = production
+
+    columns = G.terminals
+    columns.append('$') 
+    
+    for no_terminal in G.productions:
+        for terminal in columns:
+            if terminal not in table[no_terminal]:
+                table[no_terminal][terminal] = '∞'
+
+    print("Predictive table:")
+
+    pretty_table = PrettyTable()
+    pretty_table.field_names = [""] + list(table[list(table.keys())[0]].keys())
+
+    for row_key, row_value in table.items():
+        row = [row_key]
+        for col_key in list(table[list(table.keys())[0]].keys()):
+            if row_value[col_key] == '∞':
+                row.append(row_value[col_key])
+            else:
+                row.append(row_key + "->" + row_value[col_key])
+        pretty_table.add_row(row)
+
+    print(pretty_table)
 
 
 def main():
@@ -98,6 +141,9 @@ def main():
     for i in FOLLOW_SET.keys():
         FOLLOW(FIRST_SET, G, i, FOLLOW_SET)
     print(FOLLOW_SET)
+
+    predictive_table(G, FIRST_SET, FOLLOW_SET)
+
 
 if __name__ == "__main__":
     main()
