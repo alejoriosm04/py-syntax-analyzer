@@ -84,20 +84,22 @@ def FOLLOW(FIRST_SET, G, symbol, FOLLOW_SET):
 
 
 def predictive_table(G, FIRST_SET, FOLLOW_SET):
-    table = {}
-    for no_terminal in G.productions:
-        table[no_terminal] = {}
-        for production in G.productions[no_terminal]:
-            if production == 'Ɛ':
+    table = {} #creamos la tabla vacia.
+    for no_terminal in G.productions: # para cada no terminal en el conjunto de producciones (S, A, B, C..).
+        table[no_terminal] = {} # creamos un diccionario vacio para cada no terminal.
+        for production in G.productions[no_terminal]: # para cada produccion en la lista de producciones del no terminal (ABCDE, a, b, Ɛ).
+            if production == 'Ɛ': # si la produccion es epsilon, añadimos los elementos del follow de ese no terminal a la tabla.
                 for terminal in FOLLOW_SET[no_terminal]:
                     table[no_terminal][terminal] = production
-            else:
-                if production[0] in G.terminals:
+            else: # si no es epsilon, añadimos los elementos del first de ese no terminal a la tabla.
+                if production[0] in G.terminals: # si el primer elemento de la produccion es un terminal, añadimos la produccion a la tabla.
                     table[no_terminal][production[0]] = production
-                if production[0] in G.nonterminals:
+                if production[0] in G.nonterminals:  # si el primer elemento de la produccion es un no terminal, exploramos el first de ese no terminal.
                     for terminal in FIRST_SET[production[0]]:
                         table[no_terminal][terminal] = production
 
+    # añadimos los elementos que no estan en la tabla, y les asignamos un valor de infinito.
+    # creamos la columna $ que no hace parte de los no terminales.
     columns = G.terminals
     columns.append('$') 
     
