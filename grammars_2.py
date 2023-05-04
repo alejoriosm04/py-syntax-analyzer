@@ -129,7 +129,7 @@ def predictive_table(G,first_cadena,follow):
             for k in first_cadena[i][j]: # me paro en la lista del first de esa cadena (producción).
                 if k != "Ɛ": # si el elemento del first de la cadena es distinto de epsilon:
                     if table[positions_nonterminals[i]][positions_terminals[k]] == "∞":
-                        table[positions_nonterminals[i]][positions_terminals[k]] = G.productions[i][j] # en la fila del no terminal, y en la columna del terminal, agrego la producción (cadena correspondiente al first).
+                        table[positions_nonterminals[i]][positions_terminals[k]] = i + "->"+G.productions[i][j] # en la fila del no terminal, y en la columna del terminal, agrego la producción (cadena correspondiente al first).
                     else:
                         return False
                 else:
