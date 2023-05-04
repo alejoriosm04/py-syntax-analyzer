@@ -129,7 +129,7 @@ def predictive_table(G,first_cadena,follow):
             for k in first_cadena[i][j]: # me paro en la lista del first de esa cadena (producción).
                 if k != "Ɛ": # si el elemento del first de la cadena es distinto de epsilon:
                     if table[positions_nonterminals[i]][positions_terminals[k]] == "∞":
-                        table[positions_nonterminals[i]][positions_terminals[k]] = i + "->"+G.productions[i][j] # en la fila del no terminal, y en la columna del terminal, agrego la producción (cadena correspondiente al first).
+                        table[positions_nonterminals[i]][positions_terminals[k]] = G.productions[i][j] # en la fila del no terminal, y en la columna del terminal, agrego la producción (cadena correspondiente al first).
                     else:
                         return False
                 else:
@@ -140,6 +140,31 @@ def predictive_table(G,first_cadena,follow):
                             return False
     print_table(table,positions_terminals,positions_nonterminals) #llamo a la función para imprimir la tabla
     
+
+def read_string(string, G, table, positions_terminals, positions_nonterminals):
+    queue = deque()
+    queue.appendleft("$")
+    queue.appendleft(G.start)
+
+    X = queue.popleft()
+    a = string[0]
+
+    while(X is not "$"):
+        if X in G.terminals:
+            if X == a:
+                queue.popleft()
+                string = string[1:]
+            else:
+                return "Error syntax"
+        else:
+            if table[positions_nonterminals[X]][positions_terminals[a]] == "∞":
+                return "Error syntax"
+            else:
+                value = queue.popleft()
+                if table[positions_nonterminals[value]][positions_terminals[a]] != "Ɛ":
+                    queue.appendleft(table[positions_nonterminals[value]][positions_terminals[a]])
+    
+    return "String accepted"
 
 
 def main():
