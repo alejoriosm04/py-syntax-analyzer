@@ -109,12 +109,13 @@ def give_positions(keys,true_false_terminal):
 def print_table(table,positions_terminals,positions_nonterminals): 
     pretty_table = PrettyTable() #tabla a imprimir
     pretty_table.field_names = [""] + list(positions_terminals.keys())# definicion de las columnas
-    for i in range(len(table)): #definicion de filas, agrego el no terminal correspondiente
-        table[i] = deque(table[i])
-        table[i].appendleft(list(positions_nonterminals.keys())[i])
-        table[i] = list(table[i])
-    for i in range(len(table)): # agrego cada una de las filas a la tabla pretty_table
-        row = table[i]
+    table_2 = table.copy()
+    for i in range(len(table_2)): #definicion de filas, agrego el no terminal correspondiente
+        table_2[i] = deque(table_2[i])
+        table_2[i].appendleft(list(positions_nonterminals.keys())[i])
+        table_2[i] = list(table_2[i])
+    for i in range(len(table_2)): # agrego cada una de las filas a la tabla pretty_table
+        row = table_2[i]
         pretty_table.add_row(row)
     print(pretty_table) #imprimó la tabla
 
@@ -139,6 +140,12 @@ def predictive_table(G,first_cadena,follow):
                         else:
                             return False
     print_table(table,positions_terminals,positions_nonterminals) #llamo a la función para imprimir la tabla
+    while True:
+        string = input()
+        if string == "0":
+            break
+        else:
+            print(read_string(string,G,table,positions_terminals,positions_nonterminals))
     
 
 def read_string(string, G, table, positions_terminals, positions_nonterminals):
@@ -146,14 +153,18 @@ def read_string(string, G, table, positions_terminals, positions_nonterminals):
     queue.appendleft("$")
     queue.appendleft(G.start)
 
-    X = queue.popleft()
+    for i in string:
+        if i not in G.terminals:
+            return "Error syntax"
+    string = string+"$"
+    X = queue[0]
     a = string[0]
-
-    while(X is not "$"):
+    while(X != "$"):
         if X in G.terminals:
             if X == a:
                 queue.popleft()
                 string = string[1:]
+                a = string[0]
             else:
                 return "Error syntax"
         else:
@@ -162,8 +173,10 @@ def read_string(string, G, table, positions_terminals, positions_nonterminals):
             else:
                 value = queue.popleft()
                 if table[positions_nonterminals[value]][positions_terminals[a]] != "Ɛ":
-                    queue.appendleft(table[positions_nonterminals[value]][positions_terminals[a]])
-    
+                    string_reversed = table[positions_nonterminals[value]][positions_terminals[a]][::-1]
+                    for caracter in string_reversed:
+                        queue.appendleft(caracter)
+        X=queue[0]
     return "String accepted"
 
 
