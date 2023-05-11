@@ -180,6 +180,62 @@ def read_string(string, G, table, positions_terminals, positions_nonterminals):
     return "String accepted"
 
 
+class Vertex:
+    def _init_(self, i, items):
+        self.id = i
+        self.items = items
+        self.collections = []
+        self.neighbours = []
+
+
+    def add_neigh(self, v):
+        if v not in self.neighbours:
+            self.neighbours.append(v)
+
+
+class Graph:
+    def _init_(self):
+        self.vertices = {}
+
+    def add_vertex (self, v):
+        if v not in self.vertices:
+            self.vertices[v] = Vertex(v)
+
+    def add_edge(self,a,b):
+        if a in self.vertices and b in self.vertices:
+            self.vertices[a].add_neigh(b)
+            self.vertices[b].add_neigh(a)
+
+
+def automata_bottom_up(G, Vertex):
+    define_collections(G, Vertex)
+    elements = Vertex.items + Vertex.collections
+    for element in elements:
+        if element.find("•") != len(element)-1:
+            position = element.find("•")
+            element[position] = element[position+1]
+            element[position+1] = "•"
+
+
+
+def define_collections(G, Vertex):
+    for item in Vertex.items:
+        if item.find("•") != len(item)-1:
+            position = item.find("•") + 1
+            if item[position] in G.nonterminals:
+                Vertex.collections.extend(G.productions[item[position]])
+                for production in Vertex.collections:
+                    production = "•" + production
+
+    for collection in Vertex.collections:
+        if collection.find("•") != len(collection)-1:
+            position = collection.find("•") + 1
+            if collection[position] in G.nonterminals:
+                Vertex.collections.extend(G.productions[collection[position]])
+                for production in Vertex.collections:
+                    production = "•" + production
+
+
 def main():
     nonterminals, terminals, productions, start = read_grammar()
     print(productions)
