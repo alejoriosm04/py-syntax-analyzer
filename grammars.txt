@@ -75,6 +75,15 @@ S A
 S->(S)A|()A
 A->SA|Ɛ
 
+S V D T G U
+i t b ( ) l
+S->VS|Ɛ
+V->Di
+D->T|Ɛ
+T->UG
+G->lUG|Ɛ
+U->t|b|(T)
+
 S A B C
 a b u d e
 S->ABC
