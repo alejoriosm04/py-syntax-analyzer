@@ -7,7 +7,26 @@ class grammar():
         self.productions = productions
         self.start = start
 
-    
+class Vertex:
+    def __init__(self,i,item):
+        self.id = i
+        self.items = item
+        self.collections = []
+        self.neighbours = []
+    def add_neigh(self,v):
+        if v not in self.neighbours:
+            self.neighbours.append(v)
+
+class Graph:
+    def __init__(self):
+        self.vertexs = {}
+    def add_vertex (self,v,items):
+        if v not in self.vertexs:
+            self.vertexs[v] = Vertex(v,items)
+    def add_edge(self,a,b,weight):
+        if a in self.vertexs and b in self.vertexs:
+            self.vertexs[a].add_neigh((b,weight))
+
 def read_grammar():
     nonterminals = input("Enter the nonterminals: ").split()
     terminals = input("Enter the terminals: ").split()
@@ -139,102 +158,105 @@ def predictive_table(G,first_cadena,follow):
                             table[positions_nonterminals[i]][positions_terminals[z]] = "Ɛ"
                         else:
                             return False
-    print_table(table,positions_terminals,positions_nonterminals) #llamo a la función para imprimir la tabla
-    while True:
+    print_table(table,positions_terminals,positions_nonterminals) # llamo a la función para imprimir la tabla.
+    while True: # evaluar cadena.
         string = input()
-        if string == "0":
+        if string == "0": # parar de evaluar cadenas.
             break
-        else:
+        else: # continuar evaluando cadenas.
             print(read_string(string,G,table,positions_terminals,positions_nonterminals))
     
 
 def read_string(string, G, table, positions_terminals, positions_nonterminals):
-    queue = deque()
+    queue = deque() # creamos la pila que inicialmente tendrá el simbolo pesos y el inicial, este ultimo en el top de la pila 
     queue.appendleft("$")
     queue.appendleft(G.start)
 
-    for i in string:
+    for i in string: # si se ingresa un simbolo que no hace parte del lenguaje, retorna error.
         if i not in G.terminals:
             return "Error syntax"
-    string = string+"$"
-    X = queue[0]
-    a = string[0]
-    while(X != "$"):
-        if X in G.terminals:
-            if X == a:
-                queue.popleft()
-                string = string[1:]
-                a = string[0]
+    string = string+"$" # añadimos el simbolo pesos al final de la cadena ingresada para saber que se recorrio la misma completamente.
+    X = queue[0] # top de mi pila.
+    a = string[0] # caracter a evaluar.
+    while(X != "$"): # mientras que el top de la pila sea distinto de pesos (es decir, que existan producciones por aplicar).
+        if X in G.terminals: # si el top de mi pila es un terminal.
+            if X == a: # si el top de mi pila es igual al caracter que estoy evaluando (una coincidencia).
+                queue.popleft() # elimino el caracter de la pila.
+                string = string[1:] # actualizo el string, ya que se debe evaluar el siguiente caracter.
+                a = string[0] # actualizo el caracter a evaluar (siguiente al anterior).
             else:
                 return "Error syntax"
         else:
-            if table[positions_nonterminals[X]][positions_terminals[a]] == "∞":
+            if table[positions_nonterminals[X]][positions_terminals[a]] == "∞": # si se trata acceder a una posicion de la tabla de "Error".
                 return "Error syntax"
             else:
-                value = queue.popleft()
-                if table[positions_nonterminals[value]][positions_terminals[a]] != "Ɛ":
-                    string_reversed = table[positions_nonterminals[value]][positions_terminals[a]][::-1]
-                    for caracter in string_reversed:
+                value = queue.popleft() # elimino el no terminal de la pila (el que esta en el top).
+                if table[positions_nonterminals[value]][positions_terminals[a]] != "Ɛ": # si la matriz en esa coordenadas es una produccion distinta a epsilon.
+                    string_reversed = table[positions_nonterminals[value]][positions_terminals[a]][::-1] # invierto la cadena para hacer appendleft en la pila.
+                    for caracter in string_reversed: # agregamos a la pila.
                         queue.appendleft(caracter)
-        X=queue[0]
+        X=queue[0] # actualizamos el valor del top de la pila al actual.
     return "String accepted"
 
 
-class Vertex:
-    def _init_(self, i, items):
-        self.id = i
-        self.items = items
-        self.collections = []
-        self.neighbours = []
+def next_point(element): # hacer avanzar el punto de la produccion.
+    position = element.find("•") # encuentro donde esta ubicado el punto.
+    element = element[:position] + element[position+1:] #elimino el punto de la produccion.
+    element = element[:position+1] + "•" + element[position+1:] # agrego un punto a la derecha de donde se encontraba originalmente.
+    return element # retorno de la produccion con el punto movido a la derecha.
 
-
-    def add_neigh(self, v):
-        if v not in self.neighbours:
-            self.neighbours.append(v)
-
-
-class Graph:
-    def _init_(self):
-        self.vertices = {}
-
-    def add_vertex (self, v):
-        if v not in self.vertices:
-            self.vertices[v] = Vertex(v)
-
-    def add_edge(self,a,b):
-        if a in self.vertices and b in self.vertices:
-            self.vertices[a].add_neigh(b)
-            self.vertices[b].add_neigh(a)
-
-
-def automata_bottom_up(G, Vertex):
-    define_collections(G, Vertex)
-    elements = Vertex.items + Vertex.collections
-    for element in elements:
-        if element.find("•") != len(element)-1:
-            position = element.find("•")
-            element[position] = element[position+1]
-            element[position+1] = "•"
-
-
-
+                    
 def define_collections(G, Vertex):
-    for item in Vertex.items:
-        if item.find("•") != len(item)-1:
-            position = item.find("•") + 1
-            if item[position] in G.nonterminals:
-                Vertex.collections.extend(G.productions[item[position]])
-                for production in Vertex.collections:
-                    production = "•" + production
+    for item in Vertex.items:# para cada uno de los items.
+        if item.find("•") != len(item)-1: # si el punto no está en la ultima posicion.
+            position = item.find("•") + 1 # obtenemos la posicion del siguiente al punto.
+            if item[position] in G.nonterminals: # si el siguiente al punto es un no terminal.
+                Vertex.collections.extend(G.productions[item[position]]) # añadimos todo en lo que deriva ese no terminal a los colecciones del vertice actual.
+                for j in range(len(Vertex.collections)): # le ponemos un punto al principio a cada una de las colecciones.
+                    if Vertex.collections[j].find("•") == -1:
+                        Vertex.collections[j] = "•" + Vertex.collections[j]
 
-    for collection in Vertex.collections:
+
+    for collection in Vertex.collections: # se repite el mismo proceso pero ahora con cada una de las coleecciones, mirando si el siguiente al punto es un no terminal. 
         if collection.find("•") != len(collection)-1:
             position = collection.find("•") + 1
             if collection[position] in G.nonterminals:
                 Vertex.collections.extend(G.productions[collection[position]])
-                for production in Vertex.collections:
-                    production = "•" + production
+                for j in range(len(Vertex.collections)):
+                    if Vertex.collections[j].find("•") == -1:
+                        Vertex.collections[j] = "•" + Vertex.collections[j]
 
+
+def automata_bottom_up(G, Vertex, automata, id_current_table):
+    define_collections(G, Vertex) # creo lo que va en la parte de abajo de la tabla cuando ya tenemos los items.
+    elements = Vertex.items + Vertex.collections # juntamos en una variable aparte los items y las colecciones para hacer las aristas.
+    id_next_table = id_current_table+1 # identificador de la proxima tabla.
+    for element in elements: # para cada uno de los items y las colecciones de la tabla (la produccion).
+        count_differents = 0 # contador que me permite identificar si la tabla (o el vertice) ya existe en el grafo.
+        if element.find("•") != len(element)-1: # si el punto esta distinto a la ultima posición.
+            new_items = [] # guardo los items de mi proxima tabla (o vertice).
+            new_items.append(next_point(element)) # añado mi actual, con el punto corrido a la derecha.
+            for element2 in elements: # buscamos cada aparicion del mismo no terminal despues del punto para juntarlos en el item (con el punto corrido a la derecha).
+                if element2 != element:
+                    if element2.find("•") != len(element)-1:
+                        if element2[element2.find("•")+1] == element[element.find("•")+1]: # si el no terminal siguiente al punto es igual del elemento con el cual vamos a avanzar de vertice.
+                            new_items.append(next_point(element2))
+            for i in automata.vertexs: #verifico si la tabla o vertice ya existe en el grafo o no.
+                if automata.vertexs[i].items != new_items: 
+                    count_differents+=1
+                else:
+                    break 
+            if count_differents == len(automata.vertexs):# si esa tabla no existe, creo el vertice y la relacion, con su llamado recursivo con la nueva tabla.
+                    automata.add_vertex(id_next_table,new_items) # añado vertice al grafo.
+                    automata.add_edge(id_current_table,id_next_table,element[element.find("•")+1]) # añado relacion entre los vertices.
+                    id_next_table = automata_bottom_up(G,automata.vertexs[id_next_table],automata,id_next_table) # llamado recursivo, que me retorna el numero de tablas que creo, para seguir creando mas a partir de ese numero.
+            else: # si la tabla existe, simplemente creo la relacion.
+                automata.add_edge(id_current_table,automata.vertexs[count_differents].id,element[element.find("•")+1]) #le mando el contador2 que contiene al relación con su tabla respectiva.
+    return id_next_table #cuando finalice de evaluar la tabla, retorno en lo que va el contador para seguir creando tablas restantes en los anteriores llamados recursivos.
+
+def first_table_automata(automata,G):
+    automata.add_vertex(0,["•"+G.start])
+    automata_bottom_up(G,automata.vertexs[0],automata,0)
 
 def main():
     nonterminals, terminals, productions, start = read_grammar()
@@ -257,6 +279,10 @@ def main():
     print(FOLLOW_SET)
     if predictive_table(G,FIRST_SET_STRINGS,FOLLOW_SET) == False:
         print("No es ll(1), se intentó ingresar dos valores en un posición de la matriz")
+    automata = Graph()
+    first_table_automata(automata,G)
+    for i in automata.vertexs:
+        print(i,automata.vertexs[i].items,automata.vertexs[i].collections, automata.vertexs[i].neighbours)
 
 if __name__ == "__main__":
     main()
