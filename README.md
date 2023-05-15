@@ -1,5 +1,14 @@
-# py-syntax-analyzer
-Project for the third-semester course "Formal Languages and Compilers" (ST0270) taught at EAFIT University by Sergio Ramirez
+<h1 align="center">
+    <tt>> py-syntax-analyzer</tt>
+</h1>
+
+Project for the third-semester course "Formal Languages and Compilers" (ST0270) taught at EAFIT University by Sergio Ramirez.
+
+## Getting Started
+
+## Install and Usage
+
+## Documentation
 
 ## TO-DOS
 - [x] Read Gramar
@@ -14,3 +23,5 @@ Project for the third-semester course "Formal Languages and Compilers" (ST0270) 
 - [ ] Syntax Analysis Table Bottom-Up
 - [ ] Implement String Analyzer Algorithm Bottom-Up
 - [ ] Erase Left Recursion
+
+## Authors
