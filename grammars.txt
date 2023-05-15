@@ -5,6 +5,7 @@ G->+TG|Ɛ
 T->FL
 L->*FL|Ɛ
 F->(E)|i
+E
 
 S A B C D E
 a b c d e
@@ -14,12 +15,14 @@ B->b|Ɛ
 C->c
 D->d|Ɛ
 E->e|Ɛ
+S
 
 S A B
 a b
 S->AaAb|BbBa
 A->Ɛ
 B->Ɛ
+S
 
 S A B C
 a b d g h
@@ -27,6 +30,7 @@ S->ACB|CbB|Ba
 A->da|BC
 B->g|Ɛ
 C->h|Ɛ
+S
 
 S A B D
 g h i j r l c a b d
@@ -34,6 +38,7 @@ S->ABc|ghi|jrl
 A->a|b|c
 B->b
 D->d
+S
 
 S B C D E F
 h c b a g f
@@ -43,18 +48,21 @@ C->bC|Ɛ
 D->EF
 E->g|Ɛ
 F->f|Ɛ
+S
 
 S B C
 a b c d
 S->Bb|Cd
 B->aB|Ɛ
 C->cC|Ɛ
+S
 
 S A E
 i t a e c
 S->iEtSA|a
 A->Ɛ|eS
 E->c
+S
 
 S A G B C
 a b d g
@@ -63,17 +71,20 @@ A->aBG
 G->dG|Ɛ
 B->b
 C->g
+S
 
 S L G
 ( ) a ,
 S->(L)|a
 L->SG
 G->,SG|Ɛ
+S
 
 S A
 ( )
 S->(S)A|()A
 A->SA|Ɛ
+S
 
 S V D T G U
 i t b ( ) l
@@ -83,6 +94,7 @@ D->T|Ɛ
 T->UG
 G->lUG|Ɛ
 U->t|b|(T)
+S
 
 S A B C
 a b u d e
@@ -90,3 +102,4 @@ S->ABC
 A->a|b
 B->u|d|Ɛ
 C->e|Ɛ
+S
