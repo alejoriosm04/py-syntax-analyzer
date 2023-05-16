@@ -15,11 +15,13 @@ class grammar():
 
 
 class Vertex:
-    def __init__(self, i, item):
-        self.id = i
-        self.items = item
+    def __init__(self, id, items, who_items):
+        self.id = id
+        self.items = items
         self.collections = []
         self.neighbours = []
+        self.who_collections = []
+        self.who_items = who_items
 
     def add_neigh(self, v):
         if v not in self.neighbours:
@@ -30,9 +32,9 @@ class Graph:
     def __init__(self):
         self.vertices = {}
 
-    def add_vertex (self, v, items):
+    def add_vertex (self, v, items, who_items):
         if v not in self.vertices:
-            self.vertices[v] = Vertex(v,items)
+            self.vertices[v] = Vertex(v, items, who_items)
 
     def add_edge(self, a, b, weight):
         if a in self.vertices and b in self.vertices:
@@ -192,8 +194,12 @@ def define_collections(G, Vertex):
             if item[position] in G.nonterminals: # si el siguiente al punto es un no terminal.
                 Vertex.collections.extend(G.productions[item[position]]) # añadimos todo en lo que deriva ese no terminal a los colecciones del vertice actual.
                 for j in range(len(Vertex.collections)): # le ponemos un punto al principio a cada una de las colecciones.
-                    if Vertex.collections[j].find("•") == -1:
+                    if Vertex.collections[j] == 'Ɛ':
+                        Vertex.collections[j] = "•"
+                        Vertex.who_collections.append(item[position])
+                    elif Vertex.collections[j].find("•") == -1:
                         Vertex.collections[j] = "•" + Vertex.collections[j]
+                        Vertex.who_collections.append(item[position]) 
 
 
     for collection in Vertex.collections: # se repite el mismo proceso pero ahora con cada una de las coleecciones, mirando si el siguiente al punto es un no terminal. 
@@ -202,25 +208,30 @@ def define_collections(G, Vertex):
             if collection[position] in G.nonterminals:
                 Vertex.collections.extend(G.productions[collection[position]])
                 for j in range(len(Vertex.collections)):
-                    if Vertex.collections[j].find("•") == -1:
+                    if Vertex.collections[j] == 'Ɛ':
+                        Vertex.collections[j] = "•"
+                        Vertex.who_collections.append(collection[position])  
+                    elif Vertex.collections[j].find("•") == -1:
                         Vertex.collections[j] = "•" + Vertex.collections[j]
+                        Vertex.who_collections.append(collection[position]) 
 
 
 def automata_bottom_up(G, Vertex, automata, id_current_table):
     define_collections(G, Vertex) # creo lo que va en la parte de abajo de la tabla cuando ya tenemos los items.
     elements = Vertex.items + Vertex.collections # juntamos en una variable aparte los items y las colecciones para hacer las aristas.
     id_next_table = id_current_table+1 # identificador de la proxima tabla.
-    
+    who_items_collections = Vertex.who_items + Vertex.who_collections
     for element in elements: # para cada uno de los items y las colecciones de la tabla (la produccion).
         count_differents = 0 # contador que me permite identificar si la tabla (o el vertice) ya existe en el grafo.
         
-        if element.find("•") != len(element)-1: # si el punto esta distinto a la ultima posición.
+        if "•" != element[-1]: # si el punto esta distinto a la ultima posición.
             new_items = [] # guardo los items de mi proxima tabla (o vertice).
             new_items.append(next_point(element)) # añado mi actual, con el punto corrido a la derecha.
-            
+            who_new_items = []
+            who_new_items.append(who_items_collections[0])
             for element2 in elements: # buscamos cada aparicion del mismo no terminal despues del punto para juntarlos en el item (con el punto corrido a la derecha).
                 if element2 != element:
-                    if element2.find("•") != len(element)-1:
+                    if "•" != element2[-1]:
                         if element2[element2.find("•")+1] == element[element.find("•")+1]: # si el no terminal siguiente al punto es igual del elemento con el cual vamos a avanzar de vertice.
                             new_items.append(next_point(element2))
             for i in automata.vertices: #verifico si la tabla o vertice ya existe en el grafo o no.
@@ -229,15 +240,50 @@ def automata_bottom_up(G, Vertex, automata, id_current_table):
                 else:
                     break 
             if count_differents == len(automata.vertices):# si esa tabla no existe, creo el vertice y la relacion, con su llamado recursivo con la nueva tabla.
-                    automata.add_vertex(id_next_table,new_items) # añado vertice al grafo.
+                    automata.add_vertex(id_next_table,new_items,who_new_items) # añado vertice al grafo.
                     automata.add_edge(id_current_table,id_next_table,element[element.find("•")+1]) # añado relacion entre los vertices.
+                    who_items_collections.pop(0)
                     id_next_table = automata_bottom_up(G,automata.vertices[id_next_table],automata,id_next_table) # llamado recursivo, que me retorna el numero de tablas que creo, para seguir creando mas a partir de ese numero.
             else: # si la tabla existe, simplemente creo la relacion.
+                who_items_collections.pop(0)
                 automata.add_edge(id_current_table,automata.vertices[count_differents].id,element[element.find("•")+1]) #le mando el contador2 que contiene al relación con su tabla respectiva.
     
     return id_next_table #cuando finalice de evaluar la tabla, retorno en lo que va el contador para seguir creando tablas restantes en los anteriores llamados recursivos.
 
-
 def first_table_automata(automata, G):
-    automata.add_vertex(0, ["•"+G.start])
+    automata.add_vertex(0, ["•"+G.start],["δ"])
     automata_bottom_up(G, automata.vertices[0], automata, 0)
+
+
+def top_down_table(G, automata):
+    table = []
+    numeration_rows = give_positions(list(automata.vertices.keys()),False)
+    columns_items = G.terminals + G.nonterminals 
+    numeration_columns = give_positions(columns_items,True)
+
+    productions = []
+    for value in G.productions.values():
+        for production in value:
+            productions.append(production)
+    print(productions)
+    numeration_productions = give_positions(productions, False)
+    print(numeration_productions)
+
+    for rows in range(len(automata.vertices)):
+        table.append(["∞"] * (len(G.terminals) + len(G.nonterminals) + 1))
+
+    for vertex in automata.vertices:
+        for tuple_neighbour in vertex.neighbours:
+            if tuple_neighbour[1] in G.nonterminals:
+                table[numeration_rows[vertex.id]][numeration_columns[tuple_neighbour[1]]] = vertex.id
+            if tuple_neighbour[1] in G.terminals:
+                table[numeration_rows[vertex.id]][numeration_columns[tuple_neighbour[1]]] = "S"+vertex.id
+        union_items_collections = vertex.items + vertex.collections
+
+    for item in union_items_collections:
+        if item.find("•") == len(item)-1:
+            if item[:-1] == G.start:
+                table[numeration_rows[vertex.id]][numeration_columns["$"]] = "A"
+            else:
+               production = G.productions[item[:-1]] 
+        
