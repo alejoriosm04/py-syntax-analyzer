@@ -12,7 +12,7 @@ Project for the third-semester course "Formal Languages and Compilers" (ST0270) 
 
 ## TO-DOS
 - [x] Read Gramar
-- [ ] Read Grammar from a file and automatization of testing
+- [x] Read Grammar from a file and automatization of testing
 - [x] Implement FIRST Algorithm
 - [x] Implement FOLLOW Algorithm
 - [x] Implement Predictive Table Top-Down
