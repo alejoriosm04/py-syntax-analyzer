@@ -255,7 +255,7 @@ def first_table_automata(automata, G):
     automata_bottom_up(G, automata.vertices[0], automata, 0)
 
 
-def top_down_table(G, automata):
+def bottom_up_table(G, automata):
     table = []
     numeration_rows = give_positions(list(automata.vertices.keys()),False)
     columns_items = G.terminals + G.nonterminals 
