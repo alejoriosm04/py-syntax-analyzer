@@ -99,4 +99,6 @@ def test_grammars():
             automata = Graph()
             first_table_automata(automata, G)
             for i in automata.vertices:
-                print(i, automata.vertices[i].items,automata.vertices[i].collections, automata.vertices[i].neighbours)
+                print(i, automata.vertices[i].who_items, automata.vertices[i].items, automata.vertices[i].who_collections, automata.vertices[i].collections, automata.vertices[i].neighbours)
+
+            top_down_table(G, automata)
