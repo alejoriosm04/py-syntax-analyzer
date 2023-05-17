@@ -45,6 +45,44 @@ def string_input_top_down(G, table, positions_terminals,positions_nonterminals):
             print(read_string_top_down(string, G, table, positions_terminals,positions_nonterminals))
 
 
+def read_string_bottom_up(string, table, positions_rows, positions_columns, number_each_production):
+    string = string + "$"
+    current_char = string[0]
+    queue = deque()
+    queue.append(0)
+    dict_numbers = {}
+    for key in number_each_production:
+        for element in number_each_production[key]:
+            dict_numbers[element[1]] = (key,len(element[0]))
+
+    while True:
+        top_queue = queue[0]
+        if table[positions_rows[top_queue]][positions_columns[current_char]][0] == "S":
+            queue.appendleft(int(table[positions_rows[top_queue]][positions_columns[current_char]][1:]))
+            string = string[1:]
+            current_char = string[0]
+        elif table[positions_rows[top_queue]][positions_columns[current_char]][0] == "r":
+            tuple_production = dict_numbers[int(table[positions_rows[top_queue]][positions_columns[current_char]][1:])]
+            for i in range(tuple_production[1]):
+                queue.popleft()
+            top_temp = queue[0]
+            value_to_append = table[positions_rows[top_temp]][positions_columns[tuple_production[0]]]
+            
+
+
+
+                
+
+
+def string_input_bottom_up(table, positions_rows, positions_columns, number_each_production):
+    while True: # evaluar cadena.
+        string = input("Enter a string (Enter 0 to finish):")
+        if string == "0": # parar de evaluar cadenas.
+            break
+        else: # continuar evaluando cadenas.
+            print(read_string_bottom_up(string, table, positions_rows, positions_columns, number_each_production))
+
+
 def errors(id):
     if id == 1:
         return "Error syntax. Unknown symbol, not part of the language"
