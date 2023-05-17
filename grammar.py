@@ -266,7 +266,6 @@ def bottom_up_table(G, automata,follow):
     columns_items = G.terminals + G.nonterminals 
     numeration_columns = give_positions(columns_items,True)
 
-
     for rows in range(len(automata.vertices)):
         table.append(["∞"] * (len(G.terminals) + len(G.nonterminals) + 1))
 
@@ -282,14 +281,23 @@ def bottom_up_table(G, automata,follow):
         contador_2 = 0
         for tuple_neighbour in automata.vertices[vertex].neighbours:
             if tuple_neighbour[1] in G.nonterminals:
-                table[numeration_rows[automata.vertices[vertex].id]][numeration_columns[tuple_neighbour[1]]] = tuple_neighbour[0]
+                if table[numeration_rows[automata.vertices[vertex].id]][numeration_columns[tuple_neighbour[1]]] =="∞":
+                    table[numeration_rows[automata.vertices[vertex].id]][numeration_columns[tuple_neighbour[1]]] = tuple_neighbour[0]
+                else:
+                    return False
             if tuple_neighbour[1] in G.terminals:
-                table[numeration_rows[automata.vertices[vertex].id]][numeration_columns[tuple_neighbour[1]]] = "S"+str(tuple_neighbour[0])
+                if table[numeration_rows[automata.vertices[vertex].id]][numeration_columns[tuple_neighbour[1]]] == "∞":
+                    table[numeration_rows[automata.vertices[vertex].id]][numeration_columns[tuple_neighbour[1]]] = "S"+str(tuple_neighbour[0])
+                else:
+                    return False
         union_items_collections = automata.vertices[vertex].items + automata.vertices[vertex].collections
         for item_or_collection in union_items_collections:
             if "•" == item_or_collection[-1]:
                 if automata.vertices[vertex].who_items[contador_2] == "δ":
-                    table[numeration_rows[automata.vertices[vertex].id]][numeration_columns["$"]] = "A"
+                    if table[numeration_rows[automata.vertices[vertex].id]][numeration_columns["$"]] == "∞":
+                        table[numeration_rows[automata.vertices[vertex].id]][numeration_columns["$"]] = "A"
+                    else:
+                        return False
                 else:
                     lista = numero_cada_produccion[automata.vertices[vertex].who_items[contador_2]]
                     numero = 0
@@ -298,8 +306,11 @@ def bottom_up_table(G, automata,follow):
                             numero = i[1]
                             break
                     for i in follow[automata.vertices[vertex].who_items[contador_2]]:
-                        table[numeration_rows[automata.vertices[vertex].id]][numeration_columns[i]] = "r"+str(numero)
-                contador_2+=1
+                        if table[numeration_rows[automata.vertices[vertex].id]][numeration_columns[i]] == "∞":
+                            table[numeration_rows[automata.vertices[vertex].id]][numeration_columns[i]] = "r"+str(numero)
+                        else:
+                            return False
+            contador_2+=1
     print(numeration_rows)
     print(numeration_columns)
     print(numero_cada_produccion)
