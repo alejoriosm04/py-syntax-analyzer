@@ -22,11 +22,19 @@ class Vertex:
         self.neighbours = []
         self.who_collections = []
         self.who_items = who_items
+        self.relations = {}
 
     def add_neigh(self, v):
         if v not in self.neighbours:
             self.neighbours.append(v)
-
+    
+    def who_derivate_general(self,who_items, items,who_collections,collections):
+        for i in items:
+            self.relations[i] = who_items[0]
+            who_items.pop(0)
+        for i in collections:
+            self.relations[i] = who_collections[0]
+            who_collections.pop(0)
 
 class Graph:
     def __init__(self):
@@ -216,42 +224,38 @@ def define_collections(G, Vertex):
                         Vertex.who_collections.append(collection[position])  
                     elif Vertex.collections[j].find("•") == -1:
                         Vertex.collections[j] = "•" + Vertex.collections[j]
-                        Vertex.who_collections.append(collection[position]) 
+                        Vertex.who_collections.append(collection[position])
+    Vertex.who_derivate_general(Vertex.who_items, Vertex.items,Vertex.who_collections,Vertex.collections)
 
 
 def automata_bottom_up(G, Vertex, automata, id_current_table):
     define_collections(G, Vertex) # creo lo que va en la parte de abajo de la tabla cuando ya tenemos los items.
     elements = Vertex.items + Vertex.collections # juntamos en una variable aparte los items y las colecciones para hacer las aristas.
     id_next_table = id_current_table+1 # identificador de la proxima tabla.
-    who_items_collections = Vertex.who_items + Vertex.who_collections
     for element in elements: # para cada uno de los items y las colecciones de la tabla (la produccion).
         count_differents = 0 # contador que me permite identificar si la tabla (o el vertice) ya existe en el grafo.
         if "•" != element[-1]: # si el punto esta distinto a la ultima posición.
             new_items = [] # guardo los items de mi proxima tabla (o vertice).
             new_items.append(next_point(element)) # añado mi actual, con el punto corrido a la derecha.
             who_new_items = []
-            count3=0
-            who_new_items.append(who_items_collections[count3])
+            who_new_items.append(Vertex.relations[element])
             for element2 in elements: # buscamos cada aparicion del mismo no terminal despues del punto para juntarlos en el item (con el punto corrido a la derecha).
                 if element2 != element:
                     if "•" != element2[-1]:
-                        count3+=1
                         if element2[element2.find("•")+1] == element[element.find("•")+1]: # si el no terminal siguiente al punto es igual del elemento con el cual vamos a avanzar de vertice.
                             value_next_point = next_point(element2)
                             new_items.append(value_next_point)
-                            who_new_items.append(Vertex.who_collections[count3-1])
+                            who_new_items.append(Vertex.relations[element2])
             for i in automata.vertices: #verifico si la tabla o vertice ya existe en el grafo o no.
-                if automata.vertices[i].items != new_items: 
+                if sorted(automata.vertices[i].items) != sorted(new_items): 
                     count_differents+=1
                 else:
                     break 
             if count_differents == len(automata.vertices):# si esa tabla no existe, creo el vertice y la relacion, con su llamado recursivo con la nueva tabla.
                     automata.add_vertex(id_next_table,new_items,who_new_items) # añado vertice al grafo.
                     automata.add_edge(id_current_table,id_next_table,element[element.find("•")+1]) # añado relacion entre los vertices.
-                    who_items_collections.pop(0)
                     id_next_table = automata_bottom_up(G,automata.vertices[id_next_table],automata,id_next_table) # llamado recursivo, que me retorna el numero de tablas que creo, para seguir creando mas a partir de ese numero.
             else: # si la tabla existe, simplemente creo la relacion.
-                who_items_collections.pop(0)
                 automata.add_edge(id_current_table,automata.vertices[count_differents].id,element[element.find("•")+1]) #le mando el contador2 que contiene al relación con su tabla respectiva.
     
     return id_next_table #cuando finalice de evaluar la tabla, retorno en lo que va el contador para seguir creando tablas restantes en los anteriores llamados recursivos.
@@ -278,7 +282,6 @@ def bottom_up_table(G, automata,follow):
             numero_cada_produccion[i].append((j,contador))
             contador+=1
     for vertex in automata.vertices:
-        contador_2 = 0
         for tuple_neighbour in automata.vertices[vertex].neighbours:
             if tuple_neighbour[1] in G.nonterminals:
                 if table[numeration_rows[automata.vertices[vertex].id]][numeration_columns[tuple_neighbour[1]]] =="∞":
@@ -293,24 +296,23 @@ def bottom_up_table(G, automata,follow):
         union_items_collections = automata.vertices[vertex].items + automata.vertices[vertex].collections
         for item_or_collection in union_items_collections:
             if "•" == item_or_collection[-1]:
-                if automata.vertices[vertex].who_items[contador_2] == "δ":
+                if automata.vertices[vertex].relations[item_or_collection] == "δ":
                     if table[numeration_rows[automata.vertices[vertex].id]][numeration_columns["$"]] == "∞":
                         table[numeration_rows[automata.vertices[vertex].id]][numeration_columns["$"]] = "A"
                     else:
                         return False
                 else:
-                    lista = numero_cada_produccion[automata.vertices[vertex].who_items[contador_2]]
+                    lista = numero_cada_produccion[automata.vertices[vertex].relations[item_or_collection]]
                     numero = 0
                     for i in lista:
                         if i[0] == item_or_collection[0:-1]:
                             numero = i[1]
                             break
-                    for i in follow[automata.vertices[vertex].who_items[contador_2]]:
+                    for i in follow[automata.vertices[vertex].relations[item_or_collection]]:
                         if table[numeration_rows[automata.vertices[vertex].id]][numeration_columns[i]] == "∞":
                             table[numeration_rows[automata.vertices[vertex].id]][numeration_columns[i]] = "r"+str(numero)
                         else:
                             return False
-            contador_2+=1
     print(numeration_rows)
     print(numeration_columns)
     print(numero_cada_produccion)
