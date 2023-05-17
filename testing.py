@@ -33,7 +33,7 @@ def test_user_grammar():
         FOLLOW_SET[start].add('$')
     for i in FOLLOW_SET.keys():
         FOLLOW(FIRST_SET, G, i, FOLLOW_SET)
-
+    print(FOLLOW_SET)
     if predictive_table(G,FIRST_SET_STRINGS,FOLLOW_SET) is False:
         print("Error. Is not LL(1) Grammar, it was tried to input two productions in the same cell of the matrix")
 
@@ -45,6 +45,8 @@ def test_user_grammar():
     first_table_automata(automata, G)
     for i in automata.vertices:
         print(i, automata.vertices[i].items,automata.vertices[i].collections, automata.vertices[i].neighbours)
+
+    bottom_up_table(G, automata, FOLLOW_SET)
 
 
 def test_grammars():
@@ -88,7 +90,7 @@ def test_grammars():
                 FOLLOW_SET[start].add('$')
             for i in FOLLOW_SET.keys():
                 FOLLOW(FIRST_SET, G, i, FOLLOW_SET)
-
+            print(FOLLOW_SET)
             if predictive_table(G,FIRST_SET_STRINGS,FOLLOW_SET) is False:
                 print("Error. Is not LL(1) Grammar, it was tried to input two productions in the same cell of the matrix")
 
@@ -101,4 +103,4 @@ def test_grammars():
             for i in automata.vertices:
                 print(i, automata.vertices[i].who_items, automata.vertices[i].items, automata.vertices[i].who_collections, automata.vertices[i].collections, automata.vertices[i].neighbours)
 
-            bottom_up_table(G, automata)
+            bottom_up_table(G, automata, FOLLOW_SET)

@@ -103,3 +103,10 @@ A->a|b
 B->u|d|Ɛ
 C->e|Ɛ
 S
+
+S L R
+= * i
+S->L=R|R
+L->*R|i
+R->L
+S
