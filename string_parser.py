@@ -75,9 +75,9 @@ def read_string_bottom_up(string, table, positions_rows, positions_columns, numb
             value_to_append = table[positions_rows[top_temp]][positions_columns[tuple_production[0]]]
             queue.appendleft(int(value_to_append))
         elif table[positions_rows[top_queue]][positions_columns[current_char]][0] == "A":
-            return True
+            return "String Accepted"
         else:
-            return False
+            return errors(2)
 
 
 
