@@ -56,7 +56,10 @@ def read_string_bottom_up(string, table, positions_rows, positions_columns, numb
     dict_numbers = {}
     for key in number_each_production:
         for element in number_each_production[key]:
-            dict_numbers[element[1]] = (key,len(element[0]))
+            if element[0]  == "Ɛ":
+                dict_numbers[element[1]] = (key,0)
+            else:
+                dict_numbers[element[1]] = (key,len(element[0]))
 
     while True:
         top_queue = queue[0]
@@ -85,7 +88,6 @@ def string_input_bottom_up(table, positions_rows, positions_columns, number_each
             break
         else: # continuar evaluando cadenas.
             print(read_string_bottom_up(string, table, positions_rows, positions_columns, number_each_production,G))
-
 
 def errors(id):
     if id == 1:
