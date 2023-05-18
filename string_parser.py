@@ -45,7 +45,10 @@ def string_input_top_down(G, table, positions_terminals,positions_nonterminals):
             print(read_string_top_down(string, G, table, positions_terminals,positions_nonterminals))
 
 
-def read_string_bottom_up(string, table, positions_rows, positions_columns, number_each_production):
+def read_string_bottom_up(string, table, positions_rows, positions_columns, number_each_production,G):
+    for i in string: # si se ingresa un simbolo que no hace parte del lenguaje, retorna error.
+        if i not in G.terminals:
+            return errors(1)
     string = string + "$"
     current_char = string[0]
     queue = deque()
@@ -67,20 +70,21 @@ def read_string_bottom_up(string, table, positions_rows, positions_columns, numb
                 queue.popleft()
             top_temp = queue[0]
             value_to_append = table[positions_rows[top_temp]][positions_columns[tuple_production[0]]]
-            
+            queue.appendleft(int(value_to_append))
+        elif table[positions_rows[top_queue]][positions_columns[current_char]][0] == "A":
+            return True
+        else:
+            return False
 
 
 
-                
-
-
-def string_input_bottom_up(table, positions_rows, positions_columns, number_each_production):
+def string_input_bottom_up(table, positions_rows, positions_columns, number_each_production,G):
     while True: # evaluar cadena.
         string = input("Enter a string (Enter 0 to finish):")
         if string == "0": # parar de evaluar cadenas.
             break
         else: # continuar evaluando cadenas.
-            print(read_string_bottom_up(string, table, positions_rows, positions_columns, number_each_production))
+            print(read_string_bottom_up(string, table, positions_rows, positions_columns, number_each_production,G))
 
 
 def errors(id):
