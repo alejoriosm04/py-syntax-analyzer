@@ -126,7 +126,7 @@ def FOLLOW(FIRST_SET, G, symbol, FOLLOW_SET):
                                 FOLLOW_SET[symbol] = FOLLOW_SET[symbol].union(FOLLOW_SET[no_terminal])
                     else: #deje de buscar cuando no existan mas apariciones de el no terminal.
                         break
-
+    print(FOLLOW_SET)
 
 def give_positions(keys, true_false_terminal):
     dictionary = {} # diccionario donde se guardará como key el terminal o no terminal y como value el numero asignado (para manejar la tabla con posiciones numericas)
@@ -305,6 +305,9 @@ def bottom_up_table(G, automata,follow):
                     lista = numero_cada_produccion[automata.vertices[vertex].relations[item_or_collection]]
                     numero = 0
                     for i in lista:
+                        if item_or_collection == "•" and i[0] == "Ɛ":
+                            numero = i[1]
+                            break
                         if i[0] == item_or_collection[0:-1]:
                             numero = i[1]
                             break
@@ -313,8 +316,6 @@ def bottom_up_table(G, automata,follow):
                             table[numeration_rows[automata.vertices[vertex].id]][numeration_columns[i]] = "r"+str(numero)
                         else:
                             return False
-    print(numeration_rows)
-    print(numeration_columns)
-    print(numero_cada_produccion)
     print_table(table,numeration_columns,numeration_rows)
-    print(table)
+    print(numero_cada_produccion)
+    string_input_bottom_up(table, numeration_rows, numeration_columns, numero_cada_produccion,G)
