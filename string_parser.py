@@ -80,7 +80,6 @@ def read_string_bottom_up(string, table, positions_rows, positions_columns, numb
             return errors(2)
 
 
-
 def string_input_bottom_up(table, positions_rows, positions_columns, number_each_production,G):
     while True: # evaluar cadena.
         string = input("Enter a string (Enter 0 to finish):")
@@ -88,6 +87,7 @@ def string_input_bottom_up(table, positions_rows, positions_columns, number_each
             break
         else: # continuar evaluando cadenas.
             print(read_string_bottom_up(string, table, positions_rows, positions_columns, number_each_production,G))
+
 
 def errors(id):
     if id == 1:
