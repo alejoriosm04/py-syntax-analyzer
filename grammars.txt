@@ -110,3 +110,10 @@ S->L=R|R
 L->*R|i
 R->L
 S
+
+S A B C
+a b c d e g
+S->ABC
+A->Aa|Ad|b
+B->Bb|e
+C->Cc|g
