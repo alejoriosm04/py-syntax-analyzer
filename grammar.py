@@ -36,6 +36,7 @@ class Vertex:
             self.relations[i] = who_collections[0]
             who_collections.pop(0)
 
+
 class Graph:
     def __init__(self):
         self.vertices = {}
@@ -196,13 +197,13 @@ def next_point(element): # hacer avanzar el punto de la produccion.
 
                     
 def define_collections(G, Vertex):
-    visitados = []
+    visited = []
     for item in Vertex.items:# para cada uno de los items.
         if item.find("•") != len(item)-1: # si el punto no está en la ultima posicion.
             position = item.find("•") + 1 # obtenemos la posicion del siguiente al punto.
-            if item[position] in G.nonterminals and item[position] not in visitados: # si el siguiente al punto es un no terminal.
+            if item[position] in G.nonterminals and item[position] not in visited: # si el siguiente al punto es un no terminal.
                 Vertex.collections.extend(G.productions[item[position]])# añadimos todo en lo que deriva ese no terminal a los colecciones del vertice actual.
-                visitados.append(item[position])
+                visited.append(item[position])
                 for j in range(len(Vertex.collections)): # le ponemos un punto al principio a cada una de las colecciones.
                     if Vertex.collections[j] == 'Ɛ':
                         Vertex.collections[j] = "•"
@@ -215,9 +216,9 @@ def define_collections(G, Vertex):
     for collection in Vertex.collections: # se repite el mismo proceso pero ahora con cada una de las coleecciones, mirando si el siguiente al punto es un no terminal. 
         if collection.find("•") != len(collection)-1:
             position = collection.find("•") + 1
-            if collection[position] in G.nonterminals and collection[position] not in visitados:
+            if collection[position] in G.nonterminals and collection[position] not in visited:
                 Vertex.collections.extend(G.productions[collection[position]])
-                visitados.append(collection[position])
+                visited.append(collection[position])
                 for j in range(len(Vertex.collections)):
                     if Vertex.collections[j] == 'Ɛ':
                         Vertex.collections[j] = "•"
@@ -225,13 +226,14 @@ def define_collections(G, Vertex):
                     elif Vertex.collections[j].find("•") == -1:
                         Vertex.collections[j] = "•" + Vertex.collections[j]
                         Vertex.who_collections.append(collection[position])
-    Vertex.who_derivate_general(Vertex.who_items, Vertex.items,Vertex.who_collections,Vertex.collections)
+    Vertex.who_derivate_general(Vertex.who_items, Vertex.items, Vertex.who_collections, Vertex.collections)
 
 
 def automata_bottom_up(G, Vertex, automata, id_current_table):
     define_collections(G, Vertex) # creo lo que va en la parte de abajo de la tabla cuando ya tenemos los items.
     elements = Vertex.items + Vertex.collections # juntamos en una variable aparte los items y las colecciones para hacer las aristas.
     id_next_table = id_current_table+1 # identificador de la proxima tabla.
+    
     for element in elements: # para cada uno de los items y las colecciones de la tabla (la produccion).
         count_differents = 0 # contador que me permite identificar si la tabla (o el vertice) ya existe en el grafo.
         if "•" != element[-1]: # si el punto esta distinto a la ultima posición.
@@ -260,27 +262,29 @@ def automata_bottom_up(G, Vertex, automata, id_current_table):
     
     return id_next_table #cuando finalice de evaluar la tabla, retorno en lo que va el contador para seguir creando tablas restantes en los anteriores llamados recursivos.
 
+
 def first_table_automata(automata, G):
-    automata.add_vertex(0, sorted(["•"+G.start]),["δ"])
+    automata.add_vertex(0, sorted(["•"+G.start]), ["δ"])
     automata_bottom_up(G, automata.vertices[0], automata, 0)
+
 
 def bottom_up_table(G, automata,follow):
     table = []
-    numeration_rows = give_positions(list(automata.vertices.keys()),False)
+    numeration_rows = give_positions(list(automata.vertices.keys()), False)
     columns_items = G.terminals + G.nonterminals 
-    numeration_columns = give_positions(columns_items,True)
+    numeration_columns = give_positions(columns_items, True)
 
     for rows in range(len(automata.vertices)):
         table.append(["∞"] * (len(G.terminals) + len(G.nonterminals) + 1))
 
-    numero_cada_produccion = {}
+    number_each_production = {}
     for i in G.productions:
-        numero_cada_produccion[i] = []
-    contador = 0
+        number_each_production[i] = []
+    counter = 0
     for i in G.productions:
         for j in G.productions[i]:
-            numero_cada_produccion[i].append((j,contador))
-            contador+=1
+            number_each_production[i].append((j, counter))
+            counter+=1
     for vertex in automata.vertices:
         for tuple_neighbour in automata.vertices[vertex].neighbours:
             if tuple_neighbour[1] in G.nonterminals:
@@ -302,20 +306,20 @@ def bottom_up_table(G, automata,follow):
                     else:
                         return False
                 else:
-                    lista = numero_cada_produccion[automata.vertices[vertex].relations[item_or_collection]]
-                    numero = 0
+                    lista = number_each_production[automata.vertices[vertex].relations[item_or_collection]]
+                    number = 0
                     for i in lista:
                         if item_or_collection == "•" and i[0] == "Ɛ":
-                            numero = i[1]
+                            number = i[1]
                             break
                         if i[0] == item_or_collection[0:-1]:
-                            numero = i[1]
+                            number = i[1]
                             break
                     for i in follow[automata.vertices[vertex].relations[item_or_collection]]:
                         if table[numeration_rows[automata.vertices[vertex].id]][numeration_columns[i]] == "∞":
-                            table[numeration_rows[automata.vertices[vertex].id]][numeration_columns[i]] = "r"+str(numero)
+                            table[numeration_rows[automata.vertices[vertex].id]][numeration_columns[i]] = "r"+str(number)
                         else:
                             return False
     print_table(table,numeration_columns,numeration_rows)
-    print(numero_cada_produccion)
-    string_input_bottom_up(table, numeration_rows, numeration_columns, numero_cada_produccion,G)
+    print(number_each_production)
+    string_input_bottom_up(table, numeration_rows, numeration_columns, number_each_production, G)
