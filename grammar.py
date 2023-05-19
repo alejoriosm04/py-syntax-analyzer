@@ -1,7 +1,7 @@
 from prettytable import PrettyTable
 from collections import deque
 from string_parser import *
-
+import random
 
 class grammar():
     def __init__(self, nonterminals, terminals, productions, start):
