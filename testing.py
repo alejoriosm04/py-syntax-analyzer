@@ -13,22 +13,21 @@ def test_user_grammar():
     start = input("Enter the start symbol: ")
     
     G = grammar(nonterminals, terminals, productions, start)
-
+    G.remove_left_recursion()
     print("-----------------------------")
     print("Top-Down Parsing")
     print("-----------------------------")
 
     FIRST_SET = {}
     FIRST_SET_STRINGS = {}
-    for i in nonterminals:
+    for i in G.nonterminals:
         FIRST_SET[i] = set()
         FIRST_SET_STRINGS[i] = None
     for i in FIRST_SET.keys():
-        value = FIRST(G, i, productions[i], FIRST_SET)[1]
+        value = FIRST(G, i, G.productions[i], FIRST_SET)[1]
         FIRST_SET_STRINGS[i] = value
-
     FOLLOW_SET = {}
-    for i in nonterminals:
+    for i in G.nonterminals:
         FOLLOW_SET[i] = set()
         FOLLOW_SET[start].add('$')
     for i in FOLLOW_SET.keys():
