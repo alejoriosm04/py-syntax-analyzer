@@ -1,6 +1,5 @@
 from testing import *
 
-
 def main():
     while True:
         print('-----------------------------')
