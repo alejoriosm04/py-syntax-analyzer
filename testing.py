@@ -14,10 +14,12 @@ def test_user_grammar():
     
     G = grammar(nonterminals, terminals, productions, start)
     G.remove_left_recursion()
+    print("The grammar is:" )
+    for i in G.productions:
+        print(i,"->",G.productions[i])
     print("-----------------------------")
     print("Top-Down Parsing")
     print("-----------------------------")
-
     FIRST_SET = {}
     FIRST_SET_STRINGS = {}
     for i in G.nonterminals:
@@ -32,19 +34,22 @@ def test_user_grammar():
         FOLLOW_SET[start].add('$')
     for i in FOLLOW_SET.keys():
         FOLLOW(FIRST_SET, G, i, FOLLOW_SET)
-    print(FOLLOW_SET)
+    print("First: ")
+    for i in FIRST_SET:
+        print("First({})".format(i),"->",FIRST_SET[i])
+    print("")
+    print("Follow: ")
+    for i in FOLLOW_SET:
+        print("FOLLOW({})".format(i),"->",FOLLOW_SET[i])
     if predictive_table(G,FIRST_SET_STRINGS,FOLLOW_SET) is False:
         print("Error. Is not LL(1) Grammar, it was tried to input two productions in the same cell of the matrix")
-
     print("-----------------------------")
     print("Bottom-Up Parsing")
     print("-----------------------------")
-
     automata = Graph()
     first_table_automata(automata, G)
     for i in automata.vertices:
-        print(i, automata.vertices[i].items,automata.vertices[i].collections, automata.vertices[i].neighbours)
-
+        print("# -> ",i,"|","items -> ",automata.vertices[i].items,"|","collections -> ",automata.vertices[i].collections,"|","links -> ",automata.vertices[i].neighbours,"|","who derives production -> ",automata.vertices[i].relations)
     bottom_up_table(G, automata, FOLLOW_SET)
 
 
@@ -69,37 +74,41 @@ def test_grammars():
             print(start)
             
             G = grammar(nonterminals, terminals, productions, start)
-
+            G.remove_left_recursion()
+            print("The grammar is:" )
+            for i in G.productions:
+                print(i,"->",G.productions[i])
             print("-----------------------------")
             print("Top-Down Parsing")
             print("-----------------------------")
-
             FIRST_SET = {}
             FIRST_SET_STRINGS = {}
-            for i in nonterminals:
+            for i in G.nonterminals:
                 FIRST_SET[i] = set()
                 FIRST_SET_STRINGS[i] = None
             for i in FIRST_SET.keys():
-                value = FIRST(G, i, productions[i], FIRST_SET)[1]
+                value = FIRST(G, i, G.productions[i], FIRST_SET)[1]
                 FIRST_SET_STRINGS[i] = value
-
             FOLLOW_SET = {}
-            for i in nonterminals:
+            for i in G.nonterminals:
                 FOLLOW_SET[i] = set()
                 FOLLOW_SET[start].add('$')
             for i in FOLLOW_SET.keys():
                 FOLLOW(FIRST_SET, G, i, FOLLOW_SET)
-            print(FOLLOW_SET)
+            print("First: ")
+            for i in FIRST_SET:
+                print("First({})".format(i),"->",FIRST_SET[i])
+            print("")
+            print("Follow: ")
+            for i in FOLLOW_SET:
+                print("FOLLOW({})".format(i),"->",FOLLOW_SET[i])
             if predictive_table(G,FIRST_SET_STRINGS,FOLLOW_SET) is False:
                 print("Error. Is not LL(1) Grammar, it was tried to input two productions in the same cell of the matrix")
-
             print("-----------------------------")
             print("Bottom-Up Parsing")
             print("-----------------------------")
-
             automata = Graph()
             first_table_automata(automata, G)
             for i in automata.vertices:
-                print(i, automata.vertices[i].who_items, automata.vertices[i].items, automata.vertices[i].who_collections, automata.vertices[i].collections, automata.vertices[i].neighbours)
-
+                print("# -> ",i,"|","items -> ",automata.vertices[i].items,"|","collections -> ",automata.vertices[i].collections,"|","links -> ",automata.vertices[i].neighbours,"|","who derives production -> ",automata.vertices[i].relations)
             bottom_up_table(G, automata, FOLLOW_SET)
