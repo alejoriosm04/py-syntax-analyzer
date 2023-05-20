@@ -49,32 +49,32 @@ def read_string_bottom_up(string, table, positions_rows, positions_columns, numb
     for i in string: # si se ingresa un simbolo que no hace parte del lenguaje, retorna error.
         if i not in G.terminals:
             return errors(1)
-    string = string + "$"
-    current_char = string[0]
-    queue = deque()
-    queue.append(0)
-    dict_numbers = {}
-    for key in number_each_production:
+    string = string + "$" # a la cadena ingresada se le agrega $ que significa el final de la cadena
+    current_char = string[0] # caracter que se está evaluando actualmente, primer simbolo
+    queue = deque() # pila donde se actualizará la evaluación de la cadena
+    queue.append(0) # se agrega el 0 a la pila (el estado inicial)
+    dict_numbers = {} # diccionario donde se va almacenar como key la producción respectiva (enumeracion) y como value el no terminal de quien deriva esa producción y la longitud de la produccion (nos ayuda para saber la cantidad de veces que hacemos pop)
+    for key in number_each_production: 
         for element in number_each_production[key]:
             if element[0]  == "Ɛ":
-                dict_numbers[element[1]] = (key,0)
+                dict_numbers[element[1]] = (key,0) # si es epsilon, la "longitud" de lo que debo popear es 0 (es lo que representa el simbolo en si mismo)
             else:
                 dict_numbers[element[1]] = (key,len(element[0]))
 
-    while True:
-        top_queue = queue[0]
-        if table[positions_rows[top_queue]][positions_columns[current_char]][0] == "S":
-            queue.appendleft(int(table[positions_rows[top_queue]][positions_columns[current_char]][1:]))
-            string = string[1:]
-            current_char = string[0]
-        elif table[positions_rows[top_queue]][positions_columns[current_char]][0] == "r":
-            tuple_production = dict_numbers[int(table[positions_rows[top_queue]][positions_columns[current_char]][1:])]
-            for i in range(tuple_production[1]):
-                queue.popleft()
-            top_temp = queue[0]
+    while True: # se ejecuta siempre hasta que lleguemos a un estado de aceptacion ó se intente acceder a una posición de error
+        top_queue = queue[0] # actualizo el top de mi pila
+        if table[positions_rows[top_queue]][positions_columns[current_char]][0] == "S": # si la tabla en la fila del top de mi pila y en la columna del caracter actual es un shift
+            queue.appendleft(int(table[positions_rows[top_queue]][positions_columns[current_char]][1:])) # añado a la pila el numero del shift
+            string = string[1:] # actualizo el string
+            current_char = string[0] #establezco el nuevo caracter actual
+        elif table[positions_rows[top_queue]][positions_columns[current_char]][0] == "r": # si la tabla en la fila del top de mi pila y en la columna del caracter actual es un reduce
+            tuple_production = dict_numbers[int(table[positions_rows[top_queue]][positions_columns[current_char]][1:])] # accedemos a la tupla que contiene la produccion y la longitud, con el numero del reduce que estamos realizando
+            for i in range(tuple_production[1]): #popea tantas veces como la longitud de dicha producción
+                queue.popleft() 
+            top_temp = queue[0] # una vez popeados los elementos nos queda un top temporal, el cual miramos en la tabla, en la fila de ese top temporal, y en la columna del no terminal el cual contenia la produccion, y añadimos a la pila el numero con el cual realizamos el GOTO
             value_to_append = table[positions_rows[top_temp]][positions_columns[tuple_production[0]]]
             queue.appendleft(int(value_to_append))
-        elif table[positions_rows[top_queue]][positions_columns[current_char]][0] == "A":
+        elif table[positions_rows[top_queue]][positions_columns[current_char]][0] == "A": # si estamos en el estado de aceptación, el string fue procesado correctamente
             return "String Accepted"
         else:
             return errors(2)
