@@ -10,51 +10,51 @@ class grammar():
         self.productions = productions
         self.start = start
 
-    def give_positions_3(self):
-        count_Asub = 0
-        dictionary_Asub = {}
-        for i in self.nonterminals:
+    def give_positions_3(self): # establece a cada no terminal su Ai respectivo
+        count_Asub = 0  # contador que permite saber el Ai en el que vamos
+        dictionary_Asub = {} # diccionario que tendrá como key el no terminal, y como valor su Ai respectivo
+        for i in self.nonterminals: # recorremos cada no terminal, y para cada uno de ellos le asignamos el Ai
             dictionary_Asub[i] = "ª"+str(count_Asub)
             count_Asub+=1
-        return dictionary_Asub,count_Asub
+        return dictionary_Asub,count_Asub # se retorna el diccionario con las correspondencias y el contador para en el futuro crear los siguientes Ai
 
-    def find_new_letter(self,alphabet_new_nonterminals,dictionary_Asub):
-        while(True):
-            num = random.randint(0,len(alphabet_new_nonterminals))
-            if alphabet_new_nonterminals[num] not in dictionary_Asub:
-                return alphabet_new_nonterminals[num]
+    def find_new_letter(self,alphabet_new_nonterminals,dictionary_Asub): # Encuentra una letra que no haya sido utilizada aún en los no terminales de la gramatica. 
+        while(True): # Hasta que encuentre una letra que usar
+            num = random.randint(0,len(alphabet_new_nonterminals)-1) # genera un numero, el cual permite ubicarnos en la lista en la posicion de una letra
+            if alphabet_new_nonterminals[num] not in dictionary_Asub:# se verifica si la letra no se ha usado
+                return alphabet_new_nonterminals[num] # retorna la letra
 
-    def eliminate_left_recursion_Immediately(self,new_grammar_replace,dictionary_Asub,Ai,alphabet_new_nonterminals,count_Asub):
-        not_recursion = []
-        recursion = []
-        for r in new_grammar_replace["ª"+str(Ai)]:
+    def eliminate_left_recursion_Immediately(self,new_grammar_replace,dictionary_Asub,Ai,alphabet_new_nonterminals,count_Asub): # elimina la recursión inmediata de la derivación o Ai actual
+        not_recursion = [] # lista donde se guarda los elementos que no generan recursion izquierda
+        recursion = [] # lista donde se guarda los elementos que generan recursion izquierda
+        for r in new_grammar_replace["ª"+str(Ai)]: #recorremos cada una de las producciones de el Ai actual
             if len(r)>=2:
-                if r[0] + r[1] == "ª"+str(Ai):
-                    recursion.append(r)
+                if r[0] + r[1] == "ª"+str(Ai): # se verifica si en dicha producción, existe una recursión izquierda
+                    recursion.append(r) # si existe la recursión izquierda, la añadimos a la lista de quienes generan recursion
                 else:
-                    not_recursion.append(r)
+                    not_recursion.append(r) # si no existe la recursion izquierda, la añadimos a la lista de quienes no generan recursion
             else:
-                not_recursion.append(r)
-        if len(recursion)==0:
+                not_recursion.append(r) # si la produccion tiene un largo menor a 2, significa que no es de la forma Ai y por lo tanto no genera recursion
+        if len(recursion)==0: # si no hay ninguna producción que genere recursion, se termina de evaluar, y se devuelve el contador con el mismo valor con el que venia
             return count_Asub
-        else:
-            new_letter = self.find_new_letter(alphabet_new_nonterminals,dictionary_Asub)
-            self.nonterminals.append(new_letter)
-            dictionary_Asub[new_letter] = "ª"+str(count_Asub)
-            new_grammar_replace[dictionary_Asub[new_letter]]=[]
-            new_grammar_replace["ª"+str(Ai)] = []
-            for production in not_recursion:
-                if production != "Ɛ":
-                    production = production + dictionary_Asub[new_letter]
-                    new_grammar_replace["ª"+str(Ai)].append(production)
+        else: # si existe alguna producción que genere recursión
+            new_letter = self.find_new_letter(alphabet_new_nonterminals,dictionary_Asub) # encontramos la letra para esa nueva derivación que existirá en la gramatica
+            self.nonterminals.append(new_letter) # la añadimos a los no terminales
+            dictionary_Asub[new_letter] = "ª"+str(count_Asub) # le asignamos a dicho no terminal su Ai respectivo
+            new_grammar_replace[dictionary_Asub[new_letter]]=[] # añadimos a la gramatica este nuevo no terminal, y posteriormente le llenamos el valor de sus producciones
+            new_grammar_replace["ª"+str(Ai)] = [] # formateamos la derivación actual para establecerle los valores almacenados en lo que genera recursion y no
+            for production in not_recursion: # para cada uno de las producciones que no generan recursión izquierda 
+                if production != "Ɛ": 
+                    production = production + dictionary_Asub[new_letter] # le añado la producción, y al final El Ai'
+                    new_grammar_replace["ª"+str(Ai)].append(production) # se añade a las derivaciones de Ai actual
                 else:
-                    new_grammar_replace["ª"+str(Ai)].append(dictionary_Asub[new_letter])
-            for production in recursion:
-                production = production[2:] + dictionary_Asub[new_letter]
-                new_grammar_replace[dictionary_Asub[new_letter]].append(production)
-            new_grammar_replace[dictionary_Asub[new_letter]].append('Ɛ')
-            count_Asub+=1
-            return count_Asub
+                    new_grammar_replace["ª"+str(Ai)].append(dictionary_Asub[new_letter]) # Si tiene epsilon, basta con añadir el Ai', ya que epsilon representa nada
+            for production in recursion: # para cada una de las producciones que generan recursion izquierda
+                production = production[2:] + dictionary_Asub[new_letter] # popeo lo que le genera recursion izquierda a la produccion y dejo lo demás, agregandole al final el nuevo no terminal de quien estoy derivando
+                new_grammar_replace[dictionary_Asub[new_letter]].append(production) #Se añade a las derivaciones de Ai actual
+            new_grammar_replace[dictionary_Asub[new_letter]].append('Ɛ') # a esta nueva derivación que se genero siempre se añade epsilon
+            count_Asub+=1 # Como se creo un nuevo Ai, se le suma uno al contador para en el futuro crear nuevos Ai.
+            return count_Asub # retorna el contador actual del Ai, para crear nuevos Ai y no repetirlos.
 
 
 
@@ -91,14 +91,14 @@ class grammar():
         for Ai in new_grammar_replace: # vuelvo a transformar la nueva gramatica que tenemos de Ai para ponerlo en los no terminales correspondientes
             final_grammar[dictionary_Asub_reversed[Ai]] = []
         for key in new_grammar_replace: # para cada key del diccionario de la gramatica de la forma Ai
-            for production in new_grammar_replace[key]: #para cada produccion de ese Ai 
-                control=0
-                while(control<len(production)):
-                    if production[control] == "ª" and production[control]+production[control+1] in dictionary_Asub_reversed:
-                        production = production.replace(production[control]+production[control+1],dictionary_Asub_reversed[production[control]+production[control+1]])
+            for production in new_grammar_replace[key]: # para cada produccion de ese Ai 
+                control=0 # variable de control para recorrer cada caracter de la produccion
+                while(control<len(production)): # recorremos la produccion
+                    if production[control] == "ª" and production[control]+production[control+1] in dictionary_Asub_reversed: # si encuentra un Ai, lo modifica por su respectivo no terminal
+                        production = production.replace(production[control]+production[control+1],dictionary_Asub_reversed[production[control]+production[control+1]]) 
                     control+=1
-                final_grammar[dictionary_Asub_reversed[key]].append(production)
-        self.productions = final_grammar
+                final_grammar[dictionary_Asub_reversed[key]].append(production) # finalmente, añade la producción a su no terminal del quien deriva (con la transformación hecha).
+        self.productions = final_grammar # asigna a la gramatica, su nueva gramatica con la eliminación de la derivación por izquierda.
 
 
 class Vertex:
@@ -214,7 +214,6 @@ def FOLLOW(FIRST_SET, G, symbol, FOLLOW_SET):
                                 FOLLOW_SET[symbol] = FOLLOW_SET[symbol].union(FOLLOW_SET[no_terminal])
                     else: #deje de buscar cuando no existan mas apariciones de el no terminal.
                         break
-    print(FOLLOW_SET)
 
 def give_positions(keys, true_false_terminal):
     dictionary = {} # diccionario donde se guardará como key el terminal o no terminal y como value el numero asignado (para manejar la tabla con posiciones numericas)
@@ -284,7 +283,7 @@ def next_point(element): # hacer avanzar el punto de la produccion.
 
                     
 def define_collections(G, Vertex):
-    visited = []
+    visited = [] # almacena las producciones por las cuales ya se pasó para no añadir el mismo elemtento
     for item in Vertex.items:# para cada uno de los items.
         if item.find("•") != len(item)-1: # si el punto no está en la ultima posicion.
             position = item.find("•") + 1 # obtenemos la posicion del siguiente al punto.
@@ -292,10 +291,10 @@ def define_collections(G, Vertex):
                 Vertex.collections.extend(G.productions[item[position]])# añadimos todo en lo que deriva ese no terminal a los colecciones del vertice actual.
                 visited.append(item[position])
                 for j in range(len(Vertex.collections)): # le ponemos un punto al principio a cada una de las colecciones.
-                    if Vertex.collections[j] == 'Ɛ':
+                    if Vertex.collections[j] == 'Ɛ': # si es epsilon,guarde un punto y no .epsilon
                         Vertex.collections[j] = "•"
-                        Vertex.who_collections.append(item[position])
-                    elif Vertex.collections[j].find("•") == -1:
+                        Vertex.who_collections.append(item[position]) # guardo de quien deriva dicha producción (cual no terminal)
+                    elif Vertex.collections[j].find("•") == -1: #le agrega el punto al principio a todos los elementos de la coleccion (clausura)
                         Vertex.collections[j] = "•" + Vertex.collections[j]
                         Vertex.who_collections.append(item[position]) 
 
@@ -317,7 +316,7 @@ def define_collections(G, Vertex):
 
 
 def automata_bottom_up(G, Vertex, automata, id_current_table):
-    define_collections(G, Vertex) # creo lo que va en la parte de abajo de la tabla cuando ya tenemos los items.
+    define_collections(G, Vertex) # creo lo que va en la parte de abajo de la tabla cuando ya tenemos los items. (clausure)
     elements = Vertex.items + Vertex.collections # juntamos en una variable aparte los items y las colecciones para hacer las aristas.
     id_next_table = id_current_table+1 # identificador de la proxima tabla.
     
@@ -351,62 +350,63 @@ def automata_bottom_up(G, Vertex, automata, id_current_table):
 
 
 def first_table_automata(automata, G):
-    automata.add_vertex(0, sorted(["•"+G.start]), ["δ"])
-    automata_bottom_up(G, automata.vertices[0], automata, 0)
+    automata.add_vertex(0, sorted(["•"+G.start]), ["δ"]) # nuestra primera tabla del automata siempre con id 0, un punto con el no terminal inicial por delante, y un simbolo random de quien deriva esta "nueva produccion".
+    automata_bottom_up(G, automata.vertices[0], automata, 0) # llamamos a la funcion que crea el automata
 
 
 def bottom_up_table(G, automata,follow):
-    table = []
-    numeration_rows = give_positions(list(automata.vertices.keys()), False)
-    columns_items = G.terminals + G.nonterminals 
-    numeration_columns = give_positions(columns_items, True)
+    table = [] # creamos donde se almacenará la tabla
+    numeration_rows = give_positions(list(automata.vertices.keys()), False) # a cada estado lo indexamos para poder utilizar coordenadas en la tabla, representan las filas
+    columns_items = G.terminals + G.nonterminals  # las columnas son la suma de los no terminales y los terminales
+    numeration_columns = give_positions(columns_items, True) # a cada terminal y no terminal le asignamos un numero (indexamos), para poder trabajar con coordenadas en la matriz
 
-    for rows in range(len(automata.vertices)):
+    for rows in range(len(automata.vertices)): # se crea la tabla con todos los valores en infinito (aun no se establecen valores)
         table.append(["∞"] * (len(G.terminals) + len(G.nonterminals) + 1))
 
-    number_each_production = {}
+    number_each_production = {} # diccionario que almacenará el no terminal como key y sus producciones con su respectiva enumeración para los reduce
     for i in G.productions:
         number_each_production[i] = []
     counter = 0
-    for i in G.productions:
+    for i in G.productions: # se almacena como value una tupla, que es la produccion, y la enumeración de la misma.
         for j in G.productions[i]:
             number_each_production[i].append((j, counter))
             counter+=1
-    for vertex in automata.vertices:
-        for tuple_neighbour in automata.vertices[vertex].neighbours:
-            if tuple_neighbour[1] in G.nonterminals:
-                if table[numeration_rows[automata.vertices[vertex].id]][numeration_columns[tuple_neighbour[1]]] =="∞":
-                    table[numeration_rows[automata.vertices[vertex].id]][numeration_columns[tuple_neighbour[1]]] = tuple_neighbour[0]
+    for vertex in automata.vertices: # para cada uno de los estados
+        for tuple_neighbour in automata.vertices[vertex].neighbours: # accedemos a cada una de sus relaciones
+            if tuple_neighbour[1] in G.nonterminals: # si va a otra tabla con un no terminal, tabla[id_tabla_actual][no_terminal_evaluado] = id de la tabla a la que se desplaza (GO TO)
+                if table[numeration_rows[automata.vertices[vertex].id]][numeration_columns[tuple_neighbour[1]]] =="∞": # si se intenta establecer dos valores en una misma casilla retorna el error respectivo
+                    table[numeration_rows[automata.vertices[vertex].id]][numeration_columns[tuple_neighbour[1]]] = tuple_neighbour[0] # 
                 else:
                     return False
-            if tuple_neighbour[1] in G.terminals:
+            if tuple_neighbour[1] in G.terminals: # si va a otra tabla con un terminal, tabla en la fila del estado y en la columna de ese terminal, hacemos Shift x, siendo x el id de la tabla a la que nos desplazamos
                 if table[numeration_rows[automata.vertices[vertex].id]][numeration_columns[tuple_neighbour[1]]] == "∞":
                     table[numeration_rows[automata.vertices[vertex].id]][numeration_columns[tuple_neighbour[1]]] = "S"+str(tuple_neighbour[0])
                 else:
                     return False
-        union_items_collections = automata.vertices[vertex].items + automata.vertices[vertex].collections
-        for item_or_collection in union_items_collections:
-            if "•" == item_or_collection[-1]:
-                if automata.vertices[vertex].relations[item_or_collection] == "δ":
-                    if table[numeration_rows[automata.vertices[vertex].id]][numeration_columns["$"]] == "∞":
+        union_items_collections = automata.vertices[vertex].items + automata.vertices[vertex].collections # una vez halladas todas las relaciones nos preguntamos si existe alguna produccion con un punto al final de la cadena, por lo tanto, evaluamos cada uno de los items y las colecciones del estado actual
+        for item_or_collection in union_items_collections: # para cada uno de los items y las colecciones
+            if "•" == item_or_collection[-1]: # si el punto está al final del item o la coleccion
+                if automata.vertices[vertex].relations[item_or_collection] == "δ": # si dicho elemento deriva del simbolo inicial, es un estado de aceptación
+                    if table[numeration_rows[automata.vertices[vertex].id]][numeration_columns["$"]] == "∞": 
                         table[numeration_rows[automata.vertices[vertex].id]][numeration_columns["$"]] = "A"
                     else:
                         return False
                 else:
-                    lista = number_each_production[automata.vertices[vertex].relations[item_or_collection]]
-                    number = 0
-                    for i in lista:
-                        if item_or_collection == "•" and i[0] == "Ɛ":
+                    list_production = number_each_production[automata.vertices[vertex].relations[item_or_collection]] # lista que contiene cada una de las producciones del no terminal de quien deriva mi item o coleccion actual (colleccion = elementos de la clausura)
+                    number = 0 # variable que almacena el numero con el que se realizará la reducción
+                    for i in list_production: # recorremos la lista mencionada anteriormente hasta encontrar la producción actual y guardar su enumeración.
+                        if item_or_collection == "•" and i[0] == "Ɛ": # si mi item o coleccion es un punto unicamente y mi produccion es epsilon, esa es la producción con la cual se realiza el reduce de mi item o coleccion actual
                             number = i[1]
                             break
-                        if i[0] == item_or_collection[0:-1]:
+                        if i[0] == item_or_collection[0:-1]: # si no es epsilon, buscamos la producción que sea igual a mi item sin el punto, para guardar su enumeración para realizar el reduce
                             number = i[1]
                             break
-                    for i in follow[automata.vertices[vertex].relations[item_or_collection]]:
+                    for i in follow[automata.vertices[vertex].relations[item_or_collection]]: # para cada uno de los elementos del follow del no terminal de quien deriva mi item o coleccion actual que tiene un punto al final
                         if table[numeration_rows[automata.vertices[vertex].id]][numeration_columns[i]] == "∞":
-                            table[numeration_rows[automata.vertices[vertex].id]][numeration_columns[i]] = "r"+str(number)
+                            table[numeration_rows[automata.vertices[vertex].id]][numeration_columns[i]] = "r"+str(number) #se agrega el reduce con la enumeración respectiva
                         else:
                             return False
-    print_table(table,numeration_columns,numeration_rows)
-    print(number_each_production)
-    string_input_bottom_up(table, numeration_rows, numeration_columns, number_each_production, G)
+    print_table(table,numeration_columns,numeration_rows) # se imprime la tabla
+    print("productions were listed as follows: ") 
+    print(number_each_production) # se imprime la enumeración que se le dio a cada producción
+    string_input_bottom_up(table, numeration_rows, numeration_columns, number_each_production, G) # se procesan las cadenas con el analizador
