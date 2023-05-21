@@ -10,59 +10,63 @@ class grammar():
         self.productions = productions
         self.start = start
 
-    def give_positions_3(self): # establece a cada no terminal su Ai respectivo
-        count_Asub = 0  # contador que permite saber el Ai en el que vamos
-        dictionary_Asub = {} # diccionario que tendrá como key el no terminal, y como valor su Ai respectivo
-        for i in self.nonterminals: # recorremos cada no terminal, y para cada uno de ellos le asignamos el Ai
-            dictionary_Asub[i] = "ª"+str(count_Asub)
+    def give_positions_new_grammar(self): # establece a cada no terminal su A_i respectivo
+        count_Asub = 0  # contador que permite saber el A_i en el que vamos
+        dictionary_Asub = {} # diccionario que tendrá como key el no terminal, y como valor su A_i respectivo
+        for i in self.nonterminals: # recorremos cada no terminal, y para cada uno de ellos le asignamos el A_i
+            dictionary_Asub[i] = "ª" + str(count_Asub)
             count_Asub+=1
-        return dictionary_Asub,count_Asub # se retorna el diccionario con las correspondencias y el contador para en el futuro crear los siguientes Ai
+        return dictionary_Asub, count_Asub # se retorna el diccionario con las correspondencias y el contador para en el futuro crear los siguientes A_i
 
-    def find_new_letter(self,alphabet_new_nonterminals,dictionary_Asub): # Encuentra una letra que no haya sido utilizada aún en los no terminales de la gramatica. 
+    def find_new_letter(self, alphabet_new_nonterminals, dictionary_Asub): # Encuentra una letra que no haya sido utilizada aún en los no terminales de la gramatica. 
         while(True): # Hasta que encuentre una letra que usar
             num = random.randint(0,len(alphabet_new_nonterminals)-1) # genera un numero, el cual permite ubicarnos en la lista en la posicion de una letra
             if alphabet_new_nonterminals[num] not in dictionary_Asub:# se verifica si la letra no se ha usado
                 return alphabet_new_nonterminals[num] # retorna la letra
 
-    def eliminate_left_recursion_Immediately(self,new_grammar_replace,dictionary_Asub,Ai,alphabet_new_nonterminals,count_Asub): # elimina la recursión inmediata de la derivación o Ai actual
+    def eliminate_left_recursion_Immediately(self, new_grammar_replace, dictionary_Asub, A_i, alphabet_new_nonterminals, count_Asub): # elimina la recursión inmediata de la derivación o A_i actual
         not_recursion = [] # lista donde se guarda los elementos que no generan recursion izquierda
         recursion = [] # lista donde se guarda los elementos que generan recursion izquierda
-        for r in new_grammar_replace["ª"+str(Ai)]: #recorremos cada una de las producciones de el Ai actual
+        
+        for r in new_grammar_replace["ª"+str(A_i)]: #recorremos cada una de las producciones de el A_i actual
             if len(r)>=2:
-                if r[0] + r[1] == "ª"+str(Ai): # se verifica si en dicha producción, existe una recursión izquierda
+                if r[0] + r[1] == "ª"+str(A_i): # se verifica si en dicha producción, existe una recursión izquierda
                     recursion.append(r) # si existe la recursión izquierda, la añadimos a la lista de quienes generan recursion
                 else:
                     not_recursion.append(r) # si no existe la recursion izquierda, la añadimos a la lista de quienes no generan recursion
             else:
-                not_recursion.append(r) # si la produccion tiene un largo menor a 2, significa que no es de la forma Ai y por lo tanto no genera recursion
+                not_recursion.append(r) # si la produccion tiene un largo menor a 2, significa que no es de la forma A_i y por lo tanto no genera recursion
+        
         if len(recursion)==0: # si no hay ninguna producción que genere recursion, se termina de evaluar, y se devuelve el contador con el mismo valor con el que venia
             return count_Asub
         else: # si existe alguna producción que genere recursión
-            new_letter = self.find_new_letter(alphabet_new_nonterminals,dictionary_Asub) # encontramos la letra para esa nueva derivación que existirá en la gramatica
+            new_letter = self.find_new_letter(alphabet_new_nonterminals, dictionary_Asub) # encontramos la letra para esa nueva derivación que existirá en la gramatica
             self.nonterminals.append(new_letter) # la añadimos a los no terminales
-            dictionary_Asub[new_letter] = "ª"+str(count_Asub) # le asignamos a dicho no terminal su Ai respectivo
-            new_grammar_replace[dictionary_Asub[new_letter]]=[] # añadimos a la gramatica este nuevo no terminal, y posteriormente le llenamos el valor de sus producciones
-            new_grammar_replace["ª"+str(Ai)] = [] # formateamos la derivación actual para establecerle los valores almacenados en lo que genera recursion y no
+            dictionary_Asub[new_letter] = "ª"+str(count_Asub) # le asignamos a dicho no terminal su A_i respectivo
+            new_grammar_replace[dictionary_Asub[new_letter]] = [] # añadimos a la gramatica este nuevo no terminal, y posteriormente le llenamos el valor de sus producciones
+            new_grammar_replace["ª"+str(A_i)] = [] # formateamos la derivación actual para establecerle los valores almacenados en lo que genera recursion y no
+            
             for production in not_recursion: # para cada uno de las producciones que no generan recursión izquierda 
                 if production != "Ɛ": 
-                    production = production + dictionary_Asub[new_letter] # le añado la producción, y al final El Ai'
-                    new_grammar_replace["ª"+str(Ai)].append(production) # se añade a las derivaciones de Ai actual
+                    production = production + dictionary_Asub[new_letter] # le añado la producción, y al final El A_i'
+                    new_grammar_replace["ª"+str(A_i)].append(production) # se añade a las derivaciones de A_i actual
                 else:
-                    new_grammar_replace["ª"+str(Ai)].append(dictionary_Asub[new_letter]) # Si tiene epsilon, basta con añadir el Ai', ya que epsilon representa nada
+                    new_grammar_replace["ª"+str(A_i)].append(dictionary_Asub[new_letter]) # Si tiene epsilon, basta con añadir el A_i', ya que epsilon representa nada
+            
             for production in recursion: # para cada una de las producciones que generan recursion izquierda
                 production = production[2:] + dictionary_Asub[new_letter] # popeo lo que le genera recursion izquierda a la produccion y dejo lo demás, agregandole al final el nuevo no terminal de quien estoy derivando
-                new_grammar_replace[dictionary_Asub[new_letter]].append(production) #Se añade a las derivaciones de Ai actual
+                new_grammar_replace[dictionary_Asub[new_letter]].append(production) #Se añade a las derivaciones de A_i actual
+            
             new_grammar_replace[dictionary_Asub[new_letter]].append('Ɛ') # a esta nueva derivación que se genero siempre se añade epsilon
-            count_Asub+=1 # Como se creo un nuevo Ai, se le suma uno al contador para en el futuro crear nuevos Ai.
-            return count_Asub # retorna el contador actual del Ai, para crear nuevos Ai y no repetirlos.
-
-
+            count_Asub+=1 # Como se creo un nuevo A_i, se le suma uno al contador para en el futuro crear nuevos A_i.
+            return count_Asub # retorna el contador actual del A_i, para crear nuevos A_i y no repetirlos.
 
     def remove_left_recursion(self):
         alphabet_new_nonterminals = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","Ñ","O","P","Q","R","S","T","U","V","W","X","Y","Z"] # abecedario para nuevos no terminales que aparezcan
-        dictionary_Asub,count_Asub = self.give_positions_3() # asigno a cada no terminal el Asub(contador) que le pertenece y retorno el contador, para nuevos terminales que aparezcan al eliminar recursion 
+        dictionary_Asub, count_Asub = self.give_positions_new_grammar() # asigno a cada no terminal el Asub(contador) que le pertenece y retorno el contador, para nuevos terminales que aparezcan al eliminar recursion 
         dictionary_Asub_reversed = {} # se establece a que no terminal pertenece cada Asubtanto (reverse entre keys y values)
         new_grammar_replace = {} # nueva gramatica reemplazada con los Asubtantos
+        
         for nonterminal_key in self.productions: # establezco las keys en el diccionario reemplazado
             new_grammar_replace[dictionary_Asub[nonterminal_key]] = [] 
         for nonterminal_key in self.productions: # asigno la producción a cada key, reemplazado sus no terminales con el Asubtanto correspondiente
@@ -71,30 +75,30 @@ class grammar():
                     if caracter in dictionary_Asub:
                         production = production.replace(caracter,dictionary_Asub[caracter])
                 new_grammar_replace[dictionary_Asub[nonterminal_key]].append(production) # añadimos la produccion al no terminal correspondiente
-        for Ai in range(len(self.nonterminals)): #para cada i de la gramatica
-            for Aj in range(Ai): # para cada i-1 de la gramatica
+        for A_i in range(len(self.nonterminals)): #para cada i de la gramatica
+            for A_j in range(A_i): # para cada i-1 de la gramatica
                 control = 0 # variable de control para recorrer cada una de las producciones del no terminal actual
-                while(control<len(new_grammar_replace["ª"+str(Ai)])): # mientras aun no hayamos recorrido todas las producciones del no terminal actual
-                    if len(new_grammar_replace["ª"+str(Ai)][control])>2: # si el largo de la produccion actual es mayor a 2 (es decir, que puede ser de la forma "ªi")
-                        if new_grammar_replace["ª"+str(Ai)][control][0]+new_grammar_replace["ª"+str(Ai)][control][1] == "ª"+str(Aj): # verifico si hay algo de la forma Ai->Aj_
-                            to_add = new_grammar_replace["ª"+str(Ai)][control][2:] # almaceno el beta que se debe agregar a las nuevas producciones
-                            new_grammar_replace["ª"+str(Ai)].pop(new_grammar_replace["ª"+str(Ai)].index(new_grammar_replace["ª"+str(Ai)][control])) # elimino la producción actual que es de la forma Ai->Aj_
+                while(control<len(new_grammar_replace["ª"+str(A_i)])): # mientras aun no hayamos recorrido todas las producciones del no terminal actual
+                    if len(new_grammar_replace["ª"+str(A_i)][control])>2: # si el largo de la produccion actual es mayor a 2 (es decir, que puede ser de la forma "ªi")
+                        if new_grammar_replace["ª"+str(A_i)][control][0]+new_grammar_replace["ª"+str(A_i)][control][1] == "ª"+str(A_j): # verifico si hay algo de la forma A_i->Aj_
+                            to_add = new_grammar_replace["ª"+str(A_i)][control][2:] # almaceno el beta que se debe agregar a las nuevas producciones
+                            new_grammar_replace["ª"+str(A_i)].pop(new_grammar_replace["ª"+str(A_i)].index(new_grammar_replace["ª"+str(A_i)][control])) # elimino la producción actual que es de la forma A_i->Aj_
                             new_production = [] # lista donde se almacenará el nuevo value de nuestro no terminal actual 
-                            for production in new_grammar_replace["ª"+str(Aj)]: # a cada produccion de Aj le añado el to_add
+                            for production in new_grammar_replace["ª"+str(A_j)]: # a cada produccion de A_j le añado el to_add
                                 new_production.append(production+to_add) 
-                            new_grammar_replace["ª"+str(Ai)].extend(new_production) # añadimos a la lista de producciones de ese no terminal
+                            new_grammar_replace["ª"+str(A_i)].extend(new_production) # añadimos a la lista de producciones de ese no terminal
                     control+=1 # aumento variable de control
-            count_Asub = self.eliminate_left_recursion_Immediately(new_grammar_replace,dictionary_Asub,Ai,alphabet_new_nonterminals,count_Asub) # eliminamos derivación izquierda, y almacenamos el Asub en el que se va
-        for Ai in dictionary_Asub:
-            dictionary_Asub_reversed[dictionary_Asub[Ai]] = Ai
+            count_Asub = self.eliminate_left_recursion_Immediately(new_grammar_replace,dictionary_Asub,A_i,alphabet_new_nonterminals,count_Asub) # eliminamos derivación izquierda, y almacenamos el Asub en el que se va
+        for A_i in dictionary_Asub:
+            dictionary_Asub_reversed[dictionary_Asub[A_i]] = A_i
         final_grammar = {} # gramatica con eliminación por izquierda
-        for Ai in new_grammar_replace: # vuelvo a transformar la nueva gramatica que tenemos de Ai para ponerlo en los no terminales correspondientes
-            final_grammar[dictionary_Asub_reversed[Ai]] = []
-        for key in new_grammar_replace: # para cada key del diccionario de la gramatica de la forma Ai
-            for production in new_grammar_replace[key]: # para cada produccion de ese Ai 
+        for A_i in new_grammar_replace: # vuelvo a transformar la nueva gramatica que tenemos de A_i para ponerlo en los no terminales correspondientes
+            final_grammar[dictionary_Asub_reversed[A_i]] = []
+        for key in new_grammar_replace: # para cada key del diccionario de la gramatica de la forma A_i
+            for production in new_grammar_replace[key]: # para cada produccion de ese A_i 
                 control=0 # variable de control para recorrer cada caracter de la produccion
                 while(control<len(production)): # recorremos la produccion
-                    if production[control] == "ª" and production[control]+production[control+1] in dictionary_Asub_reversed: # si encuentra un Ai, lo modifica por su respectivo no terminal
+                    if production[control] == "ª" and production[control]+production[control+1] in dictionary_Asub_reversed: # si encuentra un A_i, lo modifica por su respectivo no terminal
                         production = production.replace(production[control]+production[control+1],dictionary_Asub_reversed[production[control]+production[control+1]]) 
                     control+=1
                 final_grammar[dictionary_Asub_reversed[key]].append(production) # finalmente, añade la producción a su no terminal del quien deriva (con la transformación hecha).
