@@ -243,8 +243,11 @@ def print_table(table, positions_terminals, positions_nonterminals):
         row = table_2[i]
         pretty_table.add_row(row)
     
-    print("Predictive Parsing Table:" + "\n")
+    print("\n" + "-----------------------------")
+    print("Predictive Parsing Table:")
+    print("-----------------------------" + "\n")
     print(pretty_table) #imprimó la tabla
+    print("\n" + "-------------------------------")
 
 
 def predictive_table(G, FIRST_SET_STRINGS, FOLLOW_SET):
@@ -406,7 +409,9 @@ def bottom_up_table(G, automata,follow):
                             table[numeration_rows[automata.vertices[vertex].id]][numeration_columns[i]] = "r"+str(number) #se agrega el reduce con la enumeración respectiva
                         else:
                             return False
+                        
     print_table(table,numeration_columns,numeration_rows) # se imprime la tabla
-    print("productions were listed as follows: ") 
+    print("Productions were listed as follows: ") 
     print(number_each_production) # se imprime la enumeración que se le dio a cada producción
+    print("-----------------------------")
     string_input_bottom_up(table, numeration_rows, numeration_columns, number_each_production, G) # se procesan las cadenas con el analizador

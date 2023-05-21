@@ -1,9 +1,10 @@
 from testing import *
 
+
 def main():
     while True:
         print('-----------------------------')
-        print('Final Project - Formal Languages and Compilers - ST0246')
+        print('Final Project - Formal Languages and Compilers - ST0270')
         print('Alejandro Ríos Muñoz - Kristian Restrepo')
         print('-----------------------------')
         print('0. Exit.')

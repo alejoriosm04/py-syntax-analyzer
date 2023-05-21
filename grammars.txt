@@ -118,3 +118,9 @@ A->Aa|Ad|b
 B->Bb|e
 C->Cc|g
 S
+
+S A
+( )
+S->(S)A|A
+A->SA|Ɛ
+S
