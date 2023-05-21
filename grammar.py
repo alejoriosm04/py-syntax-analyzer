@@ -24,7 +24,7 @@ class grammar():
             if alphabet_new_nonterminals[num] not in dictionary_Asub:# se verifica si la letra no se ha usado
                 return alphabet_new_nonterminals[num] # retorna la letra
 
-    def eliminate_left_recursion_Immediately(self, new_grammar_replace, dictionary_Asub, A_i, alphabet_new_nonterminals, count_Asub): # elimina la recursión inmediata de la derivación o A_i actual
+    def eliminate_left_recursion_immediately(self, new_grammar_replace, dictionary_Asub, A_i, alphabet_new_nonterminals, count_Asub): # elimina la recursión inmediata de la derivación o A_i actual
         not_recursion = [] # lista donde se guarda los elementos que no generan recursion izquierda
         recursion = [] # lista donde se guarda los elementos que generan recursion izquierda
         
@@ -88,7 +88,7 @@ class grammar():
                                 new_production.append(production+to_add) 
                             new_grammar_replace["ª"+str(A_i)].extend(new_production) # añadimos a la lista de producciones de ese no terminal
                     control+=1 # aumento variable de control
-            count_Asub = self.eliminate_left_recursion_Immediately(new_grammar_replace,dictionary_Asub,A_i,alphabet_new_nonterminals,count_Asub) # eliminamos derivación izquierda, y almacenamos el Asub en el que se va
+            count_Asub = self.eliminate_left_recursion_immediately(new_grammar_replace,dictionary_Asub,A_i,alphabet_new_nonterminals,count_Asub) # eliminamos derivación izquierda, y almacenamos el Asub en el que se va
         for A_i in dictionary_Asub:
             dictionary_Asub_reversed[dictionary_Asub[A_i]] = A_i
         final_grammar = {} # gramatica con eliminación por izquierda

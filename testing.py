@@ -123,4 +123,4 @@ def test_grammars():
                     print("Error. Is not LR(0) Grammar, it was tried to input two instructions in the same cell of the matrix")
             except:
                 print("Error. The grammar is not correct. Maybe the grammar is not possible to eliminate left recursion because has cycles.")
-                print("If it theres any production of the form A->Aa|b, where b begin with an A, then is not possible to eliminate left recursion by replacing the production with A->bA' and A'->aA'|e")
+                print("If it theres any production of the form A->Aa|b, where b begin with an A, then is not possible to eliminate left recursion by replacing the production with A->bA' and A'->αA'|e")

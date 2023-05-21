@@ -12,7 +12,7 @@ Project for the third-semester course "Formal Languages and Compilers" (ST0270) 
 - [Install and Usage](#install-and-usage)
 - [Documentation](#documentation)
     - [Grammar Definition](#grammar-definition)
-    - [Eliminate Left Recursion](#eliminate-left-recursion)
+    - [Remove Left Recursion](#remove-left-recursion)
     - [FIRST](#first)
     - [FOLLOW](#follow)
     - [LL(1)](#ll1-parsing-table)
@@ -20,6 +20,7 @@ Project for the third-semester course "Formal Languages and Compilers" (ST0270) 
     - [Automata Bootom-Up - Closure and Goto](#automata-bottom-up---closure-and-goto)
     - [Automata Bottom-Up - Parsing Table](#automata-bottom-up---parsing-table)
     - [String Analysis - Bottom-Up](#string-analysis---bottom-up)
+- [Contribute](#contribute)
 - [Authors](#authors)
 
 ## Getting Started
@@ -82,7 +83,28 @@ The `non_terminals` and `terminals` attributes are read from the file or the use
 
 This data is sent to the Grammar class and created a new object. This object is sent to the respective functions to calculate all the necesary analysis data.
 
-### Eliminate Left Recursion
+### Remove Left Recursion
+
+Four functions were created to remove the left recursion from a grammar.
+
+1. The `find_new_letter` function selects a letter that has not been used as a nonterminal in the grammar yet. It randomly selects a letter from a given list and checks if it has been used as a nonterminal. If not, it returns the letter.
+
+2. The `eliminate_left_recursion_immediately` function eliminates immediate left recursion for a given nonterminal `A_i`. It separates the productions into two lists: `recursion` (productions that generate left recursion) and `not_recursion` (productions that do not generate left recursion). It then creates a new nonterminal letter using `find_new_letter`, updates the grammar by replacing the left-recursive productions, and increments the `count_Asub` counter.
+
+3. The `remove_left_recursion` function is the main function that removes left recursion from the grammar. It initializes some variables and data structures, including `alphabet_new_nonterminals` (a list of potential new nonterminal letters), `dictionary_Asub` (a mapping of nonterminals to their corresponding `Asub` values), `dictionary_Asub_reversed` (the reverse mapping of dictionary_Asub), and `new_grammar_replace` (a dictionary to store the updated grammar).
+
+4. The function updates the grammar by replacing the nonterminals with their corresponding `Asub` values. It then iterates through the nonterminals and performs the following steps for each nonterminal `A_i`:
+    - It checks for possible left recursion with the nonterminals `A_j` (where `j` is less than `i`) and replaces the left-recursive productions accordingly.
+    - It calls the `eliminate_left_recursion_immediately` function to eliminate immediate left recursion for the current nonterminal `A_i`.
+    - It updates the `count_Asub` value for creating future Asub values.
+
+5. The function constructs the final grammar by transforming the updated grammar back to the original nonterminal symbols using the `dictionary_Asub_reversed`. It replaces the `Asub` values in the productions with their corresponding nonterminals.
+
+6. The resulting grammar with the elimination of left recursion is stored in the productions attribute of the Grammar object.
+
+This function is specific of the Grammar, and its called before starting to calculate the syntax analysis.
+
+It is important to mention that this function does not work if has cycles in the grammar. If it theres any production of the form `A->Aα|β`, where `β` begin with an `A`, then is not possible to eliminate left recursion by replacing the production with `A->βA'` and `A'->αA'|e`.
 
 ### FIRST
 
