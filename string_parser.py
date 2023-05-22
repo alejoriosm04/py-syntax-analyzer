@@ -32,6 +32,9 @@ def read_string_top_down(string, G, table, positions_terminals, positions_nonter
                     for caracter in string_reversed: # agregamos a la pila.
                         queue.appendleft(caracter)
         X = queue[0] # actualizamos el valor del top de la pila al actual.
+
+    if string[0] != "$":
+        return errors(2)
     
     return "String accepted"
 
