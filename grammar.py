@@ -114,18 +114,23 @@ class Vertex:
         self.who_collections = []
         self.who_items = who_items
         self.relations = {}
-
+        self.temp_items = {}
+        self.temp_collections = {}
     def add_neigh(self, v):
         if v not in self.neighbours:
             self.neighbours.append(v)
     
     def who_derivate_general(self,who_items, items,who_collections,collections):
+        who_items_2 = who_items.copy()
+        who_collections_2 = who_collections.copy()
         for i in items:
-            self.relations[i] = who_items[0]
-            who_items.pop(0)
+            self.relations[i] = who_items_2[0]
+            temp_val = who_items_2.pop(0)
+            self.temp_items[i] = temp_val
         for i in collections:
-            self.relations[i] = who_collections[0]
-            who_collections.pop(0)
+            self.relations[i] = who_collections_2[0]
+            temp_val = who_collections_2.pop(0)
+            self.temp_collections[i] = temp_val
 
 
 class Graph:
@@ -325,34 +330,44 @@ def define_collections(G, Vertex):
 def automata_bottom_up(G, Vertex, automata, id_current_table):
     define_collections(G, Vertex) # creo lo que va en la parte de abajo de la tabla cuando ya tenemos los items. (clausure)
     elements = Vertex.items + Vertex.collections # juntamos en una variable aparte los items y las colecciones para hacer las aristas.
+    who_two = Vertex.who_items + Vertex.who_collections
     id_next_table = id_current_table+1 # identificador de la proxima tabla.
-    
+    count_2 = 0
     for element in elements: # para cada uno de los items y las colecciones de la tabla (la produccion).
         count_differents = 0 # contador que me permite identificar si la tabla (o el vertice) ya existe en el grafo.
         if "•" != element[-1]: # si el punto esta distinto a la ultima posición.
             new_items = [] # guardo los items de mi proxima tabla (o vertice).
-            new_items.append(next_point(element)) # añado mi actual, con el punto corrido a la derecha.
+            value_next_point_string = next_point(element)
+            new_items.append(value_next_point_string) # añado mi actual, con el punto corrido a la derecha.
             who_new_items = []
-            who_new_items.append(Vertex.relations[element])
+            temp_who_items = {}
+            temp_who_items[value_next_point_string] = who_two[count_2]
+            who_new_items.append(who_two[count_2])
+            count_3=0
             for element2 in elements: # buscamos cada aparicion del mismo no terminal despues del punto para juntarlos en el item (con el punto corrido a la derecha).
                 if element2 != element:
                     if "•" != element2[-1]:
                         if element2[element2.find("•")+1] == element[element.find("•")+1]: # si el no terminal siguiente al punto es igual del elemento con el cual vamos a avanzar de vertice.
                             value_next_point = next_point(element2)
                             new_items.append(value_next_point)
-                            who_new_items.append(Vertex.relations[element2])
+                            who_new_items.append(who_two[count_3])
+                            temp_who_items[value_next_point] = who_two[count_3]
+                count_3+=1
             for i in automata.vertices: #verifico si la tabla o vertice ya existe en el grafo o no.
                 if sorted(automata.vertices[i].items) != sorted(new_items): 
                     count_differents+=1
                 else:
-                    break 
+                    if sorted(automata.vertices[i].temp_items.values())!= sorted(temp_who_items.values()):
+                        count_differents+=1
+                    else:
+                        break 
             if count_differents == len(automata.vertices):# si esa tabla no existe, creo el vertice y la relacion, con su llamado recursivo con la nueva tabla.
                     automata.add_vertex(id_next_table,new_items,who_new_items) # añado vertice al grafo.
                     automata.add_edge(id_current_table,id_next_table,element[element.find("•")+1]) # añado relacion entre los vertices.
                     id_next_table = automata_bottom_up(G,automata.vertices[id_next_table],automata,id_next_table) # llamado recursivo, que me retorna el numero de tablas que creo, para seguir creando mas a partir de ese numero.
             else: # si la tabla existe, simplemente creo la relacion.
                 automata.add_edge(id_current_table,automata.vertices[count_differents].id,element[element.find("•")+1]) #le mando el contador2 que contiene al relación con su tabla respectiva.
-    
+        count_2+=1
     return id_next_table #cuando finalice de evaluar la tabla, retorno en lo que va el contador para seguir creando tablas restantes en los anteriores llamados recursivos.
 
 
@@ -391,15 +406,17 @@ def bottom_up_table(G, automata,follow):
                 else:
                     return False
         union_items_collections = automata.vertices[vertex].items + automata.vertices[vertex].collections # una vez halladas todas las relaciones nos preguntamos si existe alguna produccion con un punto al final de la cadena, por lo tanto, evaluamos cada uno de los items y las colecciones del estado actual
+        who_twoo = automata.vertices[vertex].who_items + automata.vertices[vertex].who_collections
+        count2 = 0
         for item_or_collection in union_items_collections: # para cada uno de los items y las colecciones
             if "•" == item_or_collection[-1]: # si el punto está al final del item o la coleccion
-                if automata.vertices[vertex].relations[item_or_collection] == "δ": # si dicho elemento deriva del simbolo inicial, es un estado de aceptación
+                if who_twoo[count2] == "δ": # si dicho elemento deriva del simbolo inicial, es un estado de aceptación
                     if table[numeration_rows[automata.vertices[vertex].id]][numeration_columns["$"]] == "∞": 
                         table[numeration_rows[automata.vertices[vertex].id]][numeration_columns["$"]] = "A"
                     else:
                         return False
                 else:
-                    list_production = number_each_production[automata.vertices[vertex].relations[item_or_collection]] # lista que contiene cada una de las producciones del no terminal de quien deriva mi item o coleccion actual (colleccion = elementos de la clausura)
+                    list_production = number_each_production[who_twoo[count2]] # lista que contiene cada una de las producciones del no terminal de quien deriva mi item o coleccion actual (colleccion = elementos de la clausura)
                     number = 0 # variable que almacena el numero con el que se realizará la reducción
                     for i in list_production: # recorremos la lista mencionada anteriormente hasta encontrar la producción actual y guardar su enumeración.
                         if item_or_collection == "•" and i[0] == "Ɛ": # si mi item o coleccion es un punto unicamente y mi produccion es epsilon, esa es la producción con la cual se realiza el reduce de mi item o coleccion actual
@@ -408,11 +425,12 @@ def bottom_up_table(G, automata,follow):
                         if i[0] == item_or_collection[0:-1]: # si no es epsilon, buscamos la producción que sea igual a mi item sin el punto, para guardar su enumeración para realizar el reduce
                             number = i[1]
                             break
-                    for i in follow[automata.vertices[vertex].relations[item_or_collection]]: # para cada uno de los elementos del follow del no terminal de quien deriva mi item o coleccion actual que tiene un punto al final
+                    for i in follow[who_twoo[count2]]: # para cada uno de los elementos del follow del no terminal de quien deriva mi item o coleccion actual que tiene un punto al final
                         if table[numeration_rows[automata.vertices[vertex].id]][numeration_columns[i]] == "∞":
                             table[numeration_rows[automata.vertices[vertex].id]][numeration_columns[i]] = "r"+str(number) #se agrega el reduce con la enumeración respectiva
                         else:
                             return False
+            count2+=1
                         
     print_table(table,numeration_columns,numeration_rows) # se imprime la tabla
     print("Productions were listed as follows: ") 
