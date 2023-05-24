@@ -1,0 +1,64 @@
+S A B
+a b
+S->ASAB|Ɛ
+A->bA|Ɛ
+B->aaaaaaa
+S
+
+S A B C
+0 1 d
+S->ABdC
+A->0|1
+B->0
+C->1|0
+S
+
+S T I
++ * 0 1 2
+S->T+S|T
+T->I*T|I
+I->0|1|2
+S
+
+S T F G I
++ * 0 1 2
+S->TF
+T->IG
+F->+S|Ɛ
+G->*T|Ɛ
+I->0|1|2
+S
+
+S
++ * 0 1 2
+S->S+S|S*S|0|1|2
+S
+
+S T
+0 1 2 + *
+S->0T|1T|2T
+T->+ST|*ST|Ɛ
+S
+
+S A B
+0 1
+S->A|0B
+A->B|1
+B->S
+S
+
+A B
+c d n f r
+A->Bc|dnABf
+B->r|Ɛ
+A
+
+S
+a b ( ) c
+S->aSb|(SS)|c
+S
+
+S
+
+S->Ɛ
+S
